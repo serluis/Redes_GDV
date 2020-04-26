@@ -70,37 +70,43 @@ int main(int argc, char **argv) {
         char msg[sizeof(buffer)];
         memset(&msg, 0, sizeof(msg));
         // MENSAJES
-        if (strlen(buffer) == 2 * sizeof(char)) {
-            switch (buffer[0]) {
-                case 't': {
-                    // Mensaje en el servidor
-                    std::cout << bytes << " bytes de " << host << ":" << service << std::endl;
-                    // Respuesta al cliente
-                    strftime(msg, sizeof(msg), "%T%p", structtime);
-                    sendto(sd, msg, strlen(msg), 0, &client_addr, client_len);
-                } break;
-                case 'd': {
-                    // Mensaje en el servidor
-                    std::cout << bytes << " bytes de " << host << ":" << service << std::endl;
-                    // Respuesta al cliente
-                    strftime(msg, sizeof(msg), "%F", structtime);
-                    sendto(sd, msg, strlen(msg), 0, &client_addr, client_len);
-                } break;
-                case 'q': {
-                    std::cout << bytes << " bytes de " << host << ":" << service << std::endl;
-                    std::cout << "Saliendo..." << std::endl;
-                } break;
-                default: {
-                    std::cout << bytes << " bytes de " << host << ":" << service << std::endl;
-                    std::cout << "Comando no soportado " << buffer[0] << std::endl;
-                } break;
+        if (strlen(buffer) <= 2 * sizeof(char)) {
+            if (buffer[1] == '\0') {
+                switch (buffer[0]) {
+                    case 't': {
+                        // Mensaje en el servidor
+                        std::cout << bytes << " bytes de " << host << ":" << service << std::endl;
+                        // Respuesta al cliente
+                        strftime(msg, sizeof(msg), "%T%p", structtime);
+                        sendto(sd, msg, strlen(msg), 0, &client_addr, client_len);
+                    } break;
+                    case 'd': {
+                        // Mensaje en el servidor
+                        std::cout << bytes << " bytes de " << host << ":" << service << std::endl;
+                        // Respuesta al cliente
+                        strftime(msg, sizeof(msg), "%F", structtime);
+                        sendto(sd, msg, strlen(msg), 0, &client_addr, client_len);
+                    } break;
+                    case 'q': {
+                        std::cout << bytes << " bytes de " << host << ":" << service << std::endl;
+                        std::cout << "Saliendo..." << std::endl;
+                    } break;
+                    default: {
+                        std::cout << bytes << " bytes de " << host << ":" << service << std::endl;
+                        std::cout << "Comando no soportado " << buffer[0] << std::endl;
+                    } break;
+                }
+            }
+            else {
+                std::cout << bytes << " bytes de " << host << ":" << service << std::endl;
+                    std::cout << "Comando no soportado " << buffer << std::endl;
             }
         }
         else {
             std::cout << bytes << " bytes de " << host << ":" << service << std::endl;
-            std::cout << "Comando no soportado " << buffer;
+            std::cout << "Comando no soportado " << buffer << std::endl;
         }
-    } while (!(buffer[0] == 'q' && strlen(buffer) == 2));
+    } while (!((buffer[0] == 'q' && strlen(buffer) <= 2)));
 
     return 0;
 }
