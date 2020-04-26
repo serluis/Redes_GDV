@@ -49,20 +49,38 @@ int main(int argc, char **argv) {
 
     ssize_t bytes;
     do {
+        memset(&buffer, 0, sizeof(buffer));
+
         bytes = recvfrom(sd, buffer, 79 * sizeof(char), 0, &client_addr, &client_len);
         if (bytes == -1) {
             std::cerr << "recvfrom: " << std::endl;
             return -1;
         }
-        if (buffer != "t\n" || buffer != "d\n" || buffer != "q\n") {
-            char mess[80] = "Error: introduce t, d, q\n";
-            sendto(sd, mess, bytes, 0, &client_addr, client_len);
-        }
-    } while (buffer != "t\n" || buffer != "d\n" || buffer != "q\n");
-    
-   
 
-    getnameinfo(&client_addr, client_len, host, NI_MAXHOST, service, NI_MAXSERV, NI_NUMERICHOST | NI_NUMERICSERV);
+        // Coger la informacion
+        getnameinfo(&client_addr, client_len, host, NI_MAXHOST, service, NI_MAXSERV, NI_NUMERICHOST | NI_NUMERICSERV);
+        if (strlen(buffer) <= 2 * sizeof(char)) {
+            switch (buffer[0]) {
+                case 't': {
+                    std::cout << bytes << " bytes de " << host << ":" << service << std::endl;
+                } break;
+                case 'd': {
+                    std::cout << bytes << " bytes de " << host << ":" << service << std::endl;
+                } break;
+                case 'q': {
+                    std::cout << bytes << " bytes de " << host << ":" << service << std::endl;
+                } break;
+                default: {
+                    std::cout << bytes << " bytes de " << host << ":" << service << std::endl;
+                    std::cout << "Comando no soportado " << buffer[0] << std::endl;
+                } break;
+            }
+        }
+        else {
+            std::cout << bytes << " bytes de " << host << ":" << service << std::endl;
+            std::cout << "Comando no soportado " << buffer;
+        }
+    } while (buffer[0] != 'q' && strlen(buffer) <= 2);
 
     std::cout << "IP: " << host << " PUERTO: " << service << " MENSAJE: " << buffer << std::endl;
     // ---------------------------------------------------------------------- //
