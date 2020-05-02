@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
     
     char buffer[80];
     do {
-        // Limpiar 
+        // Limpiar el buffer
         memset(&buffer, 0, sizeof(buffer));
         // Recepcion del mensaje
         ssize_t bytes = recv(sd_client, (void*) buffer, sizeof(char)*79, 0);
@@ -89,5 +89,8 @@ int main(int argc, char **argv) {
     // Mensaje de desconexion
     std::cout << "Conexion terminada" << std::endl;
     
+    // Cerrar el server
+    close(sd);
+
     return 0;
 }

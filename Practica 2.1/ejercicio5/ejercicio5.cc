@@ -5,6 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 // Entrada salida
+#include <stdio.h>
 #include <iostream>
 
 int main(int argc, char **argv) {
@@ -43,9 +44,6 @@ int main(int argc, char **argv) {
 
     char host[NI_MAXHOST];
     char service[NI_MAXSERV];
-    
-    char msg[80];
-    memset(&msg, 0, sizeof(msg));
 
     getnameinfo(res->ai_addr, res->ai_addrlen, host, NI_MAXHOST, service, NI_MAXSERV, NI_NUMERICHOST | NI_NUMERICSERV);
     // Conectar al servidor
@@ -58,15 +56,28 @@ int main(int argc, char **argv) {
     // -- GESTION DE LA CONEXION CLIENTE ------------------------------------ //
     // ---------------------------------------------------------------------- //
     
-    // Envio del mesaje con el parametro especificado
-    send(sd, (void *)argv[1], strlen(argv[1]), 0);
+    char msg[80];
+    
+    do {
+        // Limpiar el buffer
+        memset(&msg, 0, sizeof(msg));
+        // Input del usuario
+        gets(msg);
+        // Envio del mesaje con el parametro especificado
+        send(sd, msg, strlen(msg), 0);
 
-    ssize_t bytes = recvfrom(sd, msg, sizeof(msg), 0, res->ai_addr, &res->ai_addrlen);
-    if (bytes == -1) {
-        std::cerr << "recvfrom: " << std::endl;
-        return -1;
-    }
+        ssize_t bytes = recvfrom(sd, msg, sizeof(msg), 0, res->ai_addr, &res->ai_addrlen);
+        if (bytes == -1) {
+            std::cerr << "recvfrom: " << std::endl;
+            return -1;
+        }
+        // Output del servidor
+        if (!(msg[0] == 'Q' && strlen(msg) <= 2))
+        std::cout << msg << std::endl;
+    } while (!(msg[0] == 'Q' && strlen(msg) <= 2));
 
-    std::cout << msg << std::endl;
+    // Cerrar el cliente
+    close(sd);
+
     return 0;
 }
