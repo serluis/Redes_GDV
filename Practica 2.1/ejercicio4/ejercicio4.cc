@@ -19,8 +19,8 @@ int main(int argc, char **argv) {
     // Resetear la memoria desde hints hasta hints + addrinfo
     memset(&hints, 0, sizeof(struct addrinfo));
     // Configuracion
-    hints.ai_family;
-    hints.ai_socktype;
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
 
     // Coger la info del servidor
     int rc = getaddrinfo(argv[1], argv[2], &hints, &res);
@@ -71,20 +71,19 @@ int main(int argc, char **argv) {
     // ---------------------------------------------------------------------- //
     
     char buffer[80];
-    ssize_t bytes;
     do {
         // Limpiar 
         memset(&buffer, 0, sizeof(buffer));
         // Recepcion del mensaje
-        bytes = recv(sd_client, (void *) buffer, sizeof(char)*79, 0);
+        ssize_t bytes = recv(sd_client, (void*) buffer, sizeof(char)*79, 0);
         if (bytes <= 0) {
-                // Mensaje de desconexion
-    std::cout << "Conexion terminada" << std::endl;
+            // Mensaje de desconexion
+            std::cout << "Conexion terminada" << std::endl;
             return 0;
         }
         // Mandar el mensaje al cliente
         if (!(buffer[0] == 'Q' && strlen(buffer) <= 2))
-            send(sd_client, (void *) buffer, bytes, 0);
+            send(sd_client, (void*) buffer, bytes, 0);
     } while(!(buffer[0] == 'Q' && strlen(buffer) <= 2));
     
     // Mensaje de desconexion
