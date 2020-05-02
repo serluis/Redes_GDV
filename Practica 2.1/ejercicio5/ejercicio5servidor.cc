@@ -84,8 +84,8 @@ return 0;
 
 std::cout << "MENSAJE: " << buffer << std::endl;
 
-/*send(sd_client, (void *) buffer, bytes, 0);
-std::cout << "contenido antes de while: " << buffer << " buffer 0: "
+send(sd_client, (void *) buffer, bytes, 0);
+/*std::cout << "contenido antes de while: " << buffer << " buffer 0: "
 <<buffer[0]<<" buffer 1: "<< buffer[1]<< " largo buffer: "
 << strlen(buffer) << std::endl;*/
 
