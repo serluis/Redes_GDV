@@ -1,4 +1,3 @@
-
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -15,7 +14,6 @@ int main(int argc, char **argv)
 {
 struct addrinfo hints;
 struct addrinfo * res;
-
 // ---------------------------------------------------------------------- //
 // INICIALIZACIÓN SOCKET & BIND //
 // ---------------------------------------------------------------------- //
@@ -29,7 +27,7 @@ int rc = getaddrinfo(argv[1], argv[2], &hints, &res);
 
 if ( rc != 0 )
 {
-std::cerr << "getaddrinfo: " << gai_strerror(rc) << std::endl;
+    std::cerr << "getaddrinfo: " << gai_strerror(rc) << std::endl;
 return -1;
 }
 
@@ -39,12 +37,11 @@ int sd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 
 if ( bind(sd, res->ai_addr, res->ai_addrlen) != 0 )
 {
-std::cerr << "bind: " << std::endl;
+std::cerr << "error de bind: " << std::endl;
 return -1;
 }
 
 freeaddrinfo(res);
-
 // ---------------------------------------------------------------------- //
 // PUBLICAR EL SERVIDOR (LISTEN) //
 // ---------------------------------------------------------------------- //
@@ -58,7 +55,6 @@ if (oreja<0){
 // ---------------------------------------------------------------------- //
 struct sockaddr client_addr;
 socklen_t client_len = sizeof(struct sockaddr);
-
 char host[NI_MAXHOST];
 char service[NI_MAXSERV];
 
@@ -74,17 +70,32 @@ std::cout << "CONEXION DESDE IP: " << host << " PUERTO: " << service
 // GESTION DE LA CONEXION CLIENTE //
 // ---------------------------------------------------------------------- //
 char buffer[80];
+ssize_t bytes;
+
 do{
-ssize_t bytes = recv(sd_client, (void *) buffer, sizeof(char)*79, 0);
+memset(&buffer,0,sizeof(buffer));
+bytes = recv(sd_client, (void *) buffer, sizeof(char)*79, 0);
 
 if ( bytes <= 0 )
 {
+std::cerr << "error de bytes: " << std::endl;
 return 0;
 }
 
 std::cout << "MENSAJE: " << buffer << std::endl;
 
-send(sd_client, (void *) buffer, bytes, 0);
-}while(true);
+/*send(sd_client, (void *) buffer, bytes, 0);
+std::cout << "contenido antes de while: " << buffer << " buffer 0: "
+<<buffer[0]<<" buffer 1: "<< buffer[1]<< " largo buffer: "
+<< strlen(buffer) << std::endl;*/
+
+}while(!((buffer[0] == 'Q' && strlen(buffer) <= 2)));
+
+/*std::cout << "contenido despues de while: " << buffer << " buffer 0: "
+<<buffer[0]<<" buffer 1: "<< buffer[1]<< " largo buffer: "
+<< strlen(buffer) << std::endl;*/
+
+std::cout << "Conexion terminada. " << std::endl;
+
 return 0;
 }
