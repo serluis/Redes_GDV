@@ -78,7 +78,7 @@ bytes = recv(sd_client, (void *) buffer, sizeof(char)*79, 0);
 
 if ( bytes <= 0 )
 {
-std::cerr << "error de bytes: " << std::endl;
+std::cout << "conexion terminada en cliente " << std::endl;
 return 0;
 }
 
@@ -91,11 +91,7 @@ std::cout << "contenido antes de while: " << buffer << " buffer 0: "
 
 }while(!((buffer[0] == 'Q' && strlen(buffer) <= 2)));
 
-/*std::cout << "contenido despues de while: " << buffer << " buffer 0: "
-<<buffer[0]<<" buffer 1: "<< buffer[1]<< " largo buffer: "
-<< strlen(buffer) << std::endl;*/
-
-std::cout << "Conexion terminada. " << std::endl;
+std::cout << "Conexion terminada por orden del cliente. " << std::endl;
 
 return 0;
 }

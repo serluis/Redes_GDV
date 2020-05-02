@@ -79,12 +79,16 @@ ssize_t bytes = recv(sd_client, (void *) buffer, sizeof(char)*79, 0);
 
 if ( bytes <= 0 )
 {
-return 0;
+    std::cout << "Conexion terminada. " << std::endl;
+    return 0;
 }
 
 std::cout << "MENSAJE: " << buffer << std::endl;
 
 send(sd_client, (void *) buffer, bytes, 0);
 }while(true);
+
+
+
 return 0;
 }
