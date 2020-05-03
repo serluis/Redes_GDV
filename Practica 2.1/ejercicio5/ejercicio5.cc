@@ -57,7 +57,6 @@ int main(int argc, char **argv) {
     // ---------------------------------------------------------------------- //
     
     char msg[80];
-    
     do {
         // Limpiar el buffer
         memset(&msg, 0, sizeof(msg));
