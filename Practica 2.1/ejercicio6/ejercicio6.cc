@@ -33,6 +33,10 @@ class TrataMsg{
         memset(&buffer, 0, sizeof(buffer));
         // Control de errores del buffer
         bytes = recvfrom(sd, buffer, 79 * sizeof(char), 0, &client_addr, &client_len);
+        /*if(!((buffer[0] == 'q' && strlen(buffer) <= 2))){
+            std::thread detach;
+            return;
+        }*/
         if (bytes == -1) {
             std::cerr << "recvfrom: " << std::endl; 
             return;           
@@ -87,7 +91,7 @@ class TrataMsg{
             std::cout << "Comando no soportado 2else " << buffer << std::endl;
         }
         std::cout << "THREAD: " << std::this_thread::get_id() << " IP: " << host << " PUERTO: " << service << " MENSAJE: " << buffer << std::endl;
-        sleep(10);
+        sleep(1);
     } while (!((buffer[0] == 'q' && strlen(buffer) <= 2)));
     }
     
@@ -133,17 +137,16 @@ int main(int argc, char **argv)
     std::vector<std::thread> pool;
 
     for (int i = 0; i < 5 ; ++i)
-    {
-        //pool.push_back(std::thread(haz_mensaje, sd, i));
-        //TrataMsg cliente(sd);
+    {        
         pool.push_back(std::thread(envelope,sd));
+        //recibir id del thread y guardarla
     }
     for (auto &t: pool)
     {
         t.join();
     }
-
+    //while <5thread cerrar todos.
     close(sd);
-
+    std::cout << "MAIN THREAD TERMINADO" << std::endl; 
     return 0;
 }
