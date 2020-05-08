@@ -1,42 +1,16 @@
-// Includes sockets
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <string.h>
 #include <unistd.h>
-// Includes tiempo
-#include <time.h>
-// Includes entrada/salida
+#include <mutex>
+#include <condition_variable>
 #include <iostream>
+#include <thread>
+#include <vector>
 
-int main(int argc, char **argv) {
-    struct addrinfo hints;
-    struct addrinfo * res;
-
-    // ---------------------------------------------------------------------- //
-    // --------------------- INICIALIZACIÓN SOCKET & BIND ------------------- //
-    // ---------------------------------------------------------------------- //
-
-    memset(&hints, 0, sizeof(struct addrinfo));
-
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_DGRAM;
-
-    int rc = getaddrinfo(argv[1], argv[2], &hints, &res);
-    if (rc != 0) {
-        std::cerr << "getaddrinfo: " << gai_strerror(rc) << std::endl;
-        return -1;
-    }
-
-    // res contiene la representación como sockaddr de dirección + puerto
-    int sd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-
-    if (bind(sd, res->ai_addr, res->ai_addrlen) != 0) {
-        std::cerr << "bind: " << std::endl;
-        return -1;
-    }
-    freeaddrinfo(res);
-
+void haz_mensaje(int sd, int id)
+{
     // ---------------------------------------------------------------------- //
     // ------------- RECEPCIÓN MENSAJE DE CLIENTE Y RESPUESTA --------------- //
     // ---------------------------------------------------------------------- //
@@ -46,7 +20,6 @@ int main(int argc, char **argv) {
 
     struct sockaddr client_addr;
     socklen_t client_len = sizeof(struct sockaddr);
-
     ssize_t bytes;
     do {
         // Libera la memoria del buffer para que no se sobreescriba
@@ -55,9 +28,8 @@ int main(int argc, char **argv) {
         bytes = recvfrom(sd, buffer, 79 * sizeof(char), 0, &client_addr, &client_len);
         if (bytes == -1) {
             std::cerr << "recvfrom: " << std::endl;
-            return -1;
+            
         }
-
         // Coger la informacion
         getnameinfo(&client_addr, client_len, host, NI_MAXHOST, service, NI_MAXSERV, NI_NUMERICHOST | NI_NUMERICSERV);
 
@@ -81,7 +53,7 @@ int main(int argc, char **argv) {
                         sendto(sd, msg, strlen(msg), 0, &client_addr, client_len);
                     } break;
                     case 'd': {
-                        // Mensaje en el servidor
+                         // Mensaje en el servidor
                         std::cout << bytes << " bytes de " << host << ":" << service << std::endl;
                         // Respuesta al cliente
                         strftime(msg, sizeof(msg), "%F", structtime);
@@ -93,20 +65,67 @@ int main(int argc, char **argv) {
                     } break;
                     default: {
                         std::cout << bytes << " bytes de " << host << ":" << service << std::endl;
-                        std::cout << "Comando no soportado " << buffer[0] << std::endl;
+                        std::cout << "Comando no soportado default" << buffer[0] << std::endl;
                     } break;
                 }
             }
             else {
                 std::cout << bytes << " bytes de " << host << ":" << service << std::endl;
-                    std::cout << "Comando no soportado " << buffer << std::endl;
+                    std::cout << "Comando no soportado 1else" << buffer << std::endl;
             }
         }
         else {
             std::cout << bytes << " bytes de " << host << ":" << service << std::endl;
-            std::cout << "Comando no soportado " << buffer << std::endl;
+            std::cout << "Comando no soportado 2else " << buffer << std::endl;
         }
     } while (!((buffer[0] == 'q' && strlen(buffer) <= 2)));
+}
+
+int main(int argc, char **argv)
+{
+    struct addrinfo hints;
+    struct addrinfo * res;
+    // ---------------------------------------------------------------------- //
+    // INICIALIZACIÓN SOCKET & BIND //
+    // ---------------------------------------------------------------------- //
+
+    memset(&hints, 0, sizeof(struct addrinfo));
+
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_DGRAM;
+    int rc = getaddrinfo(argv[1], argv[2], &hints, &res);
+
+    if ( rc != 0 )
+    {
+        std::cerr << "getaddrinfo: " << gai_strerror(rc) << std::endl;
+        return -1;
+    }
+    // res contiene la representación como sockaddr de dirección + puerto
+
+    int sd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+
+    if ( bind(sd, res->ai_addr, res->ai_addrlen) != 0 )
+    {
+        std::cerr << "bind: " << std::endl;
+        return -1;
+    }
+    freeaddrinfo(res);
+
+    // -------------------------------------------------------------------------
+    // POOL DE THREADS
+    // -------------------------------------------------------------------------
+    std::vector<std::thread> pool;
+
+    for (int i = 0; i < 5 ; ++i)
+    {
+        pool.push_back(std::thread(haz_mensaje, sd, i));
+    }
+    for (auto &t: pool)
+    {
+        t.join();
+    }
+
+    close(sd);
 
     return 0;
 }
