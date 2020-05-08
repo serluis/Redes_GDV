@@ -10,11 +10,12 @@
 #include <vector>
 
 class TrataMsg{
-    private:
+private:
     int sd;
-    public:
-    TrataMsg(int sd):sd(sd){
-        //haz_mensaje(sd,std::this_thread::get_id());
+public:
+    TrataMsg(int sd):sd(sd){}
+    ~TrataMsg(){
+        std::thread::get_id().detach;
     }
     void haz_mensaje(int sd)
     {
@@ -54,7 +55,7 @@ class TrataMsg{
         memset(&msg, 0, sizeof(msg));
         // MENSAJES
         if (strlen(buffer) <= 2 * sizeof(char)) {
-            if (buffer[1] == '\n') {
+            if (buffer[1] == '\n' || buffer[1] == '\0') {
                 switch (buffer[0]) {
                     case 't': {
                         // Mensaje en el servidor
@@ -91,15 +92,15 @@ class TrataMsg{
             std::cout << "Comando no soportado 2else " << buffer << std::endl;
         }
         std::cout << "THREAD: " << std::this_thread::get_id() << " IP: " << host << " PUERTO: " << service << " MENSAJE: " << buffer << std::endl;
-        sleep(1);
+        sleep(3);
     } while (!((buffer[0] == 'q' && strlen(buffer) <= 2)));
     }
     
 };
-void envelope(int sd){
+/*void envelope(int sd){
     TrataMsg cliente(sd);
     cliente.haz_mensaje(sd);
-}
+}*/
 
 int main(int argc, char **argv)
 {
@@ -138,14 +139,23 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < 5 ; ++i)
     {        
-        pool.push_back(std::thread(envelope,sd));
-        //recibir id del thread y guardarla
+        //pool.push_back(std::thread(envelope,sd));
+        pool.push_back(std::thread([&](){ TrataMsg cliente(sd); cliente.haz_mensaje(sd); }));
+        //std::thread([&](){TrataMsg cliente(sd);cliente.haz_menaje();});
     }
-    for (auto &t: pool)
+    struct sockaddr client_addr;
+    socklen_t client_len = sizeof(struct sockaddr);
+    char condition[10];
+    do{
+        memset(&condition, 0, sizeof(condition));
+        ssize_t bytes = recvfrom(sd, condition,strlen(condition), 0, &client_addr, &client_len);
+    }while(!(condition[0] == 'q' && strlen(condition) <= 2));
+
+    /*for (auto &t: pool)
     {
         t.join();
-    }
-    //while <5thread cerrar todos.
+    }*/
+    
     close(sd);
     std::cout << "MAIN THREAD TERMINADO" << std::endl; 
     return 0;
