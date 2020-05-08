@@ -9,8 +9,15 @@
 #include <thread>
 #include <vector>
 
-void haz_mensaje(int sd, int id)
-{
+class TrataMsg{
+    private:
+    int sd;
+    public:
+    TrataMsg(int sd):sd(sd){
+        //haz_mensaje(sd,std::this_thread::get_id());
+    }
+    void haz_mensaje(int sd)
+    {
     // ---------------------------------------------------------------------- //
     // ------------- RECEPCIÓN MENSAJE DE CLIENTE Y RESPUESTA --------------- //
     // ---------------------------------------------------------------------- //
@@ -27,8 +34,8 @@ void haz_mensaje(int sd, int id)
         // Control de errores del buffer
         bytes = recvfrom(sd, buffer, 79 * sizeof(char), 0, &client_addr, &client_len);
         if (bytes == -1) {
-            std::cerr << "recvfrom: " << std::endl;
-            
+            std::cerr << "recvfrom: " << std::endl; 
+            return;           
         }
         // Coger la informacion
         getnameinfo(&client_addr, client_len, host, NI_MAXHOST, service, NI_MAXSERV, NI_NUMERICHOST | NI_NUMERICSERV);
@@ -43,7 +50,7 @@ void haz_mensaje(int sd, int id)
         memset(&msg, 0, sizeof(msg));
         // MENSAJES
         if (strlen(buffer) <= 2 * sizeof(char)) {
-            if (buffer[1] == '\0') {
+            if (buffer[1] == '\n') {
                 switch (buffer[0]) {
                     case 't': {
                         // Mensaje en el servidor
@@ -51,6 +58,7 @@ void haz_mensaje(int sd, int id)
                         // Respuesta al cliente
                         strftime(msg, sizeof(msg), "%T%p", structtime);
                         sendto(sd, msg, strlen(msg), 0, &client_addr, client_len);
+
                     } break;
                     case 'd': {
                          // Mensaje en el servidor
@@ -78,7 +86,15 @@ void haz_mensaje(int sd, int id)
             std::cout << bytes << " bytes de " << host << ":" << service << std::endl;
             std::cout << "Comando no soportado 2else " << buffer << std::endl;
         }
+        std::cout << "THREAD: " << std::this_thread::get_id() << " IP: " << host << " PUERTO: " << service << " MENSAJE: " << buffer << std::endl;
+        sleep(10);
     } while (!((buffer[0] == 'q' && strlen(buffer) <= 2)));
+    }
+    
+};
+void envelope(int sd){
+    TrataMsg cliente(sd);
+    cliente.haz_mensaje(sd);
 }
 
 int main(int argc, char **argv)
@@ -118,7 +134,9 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < 5 ; ++i)
     {
-        pool.push_back(std::thread(haz_mensaje, sd, i));
+        //pool.push_back(std::thread(haz_mensaje, sd, i));
+        //TrataMsg cliente(sd);
+        pool.push_back(std::thread(envelope,sd));
     }
     for (auto &t: pool)
     {
