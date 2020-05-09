@@ -10,9 +10,15 @@
 #include <iostream>
 // Includes de threads
 #include <thread>
-#include <pthread.h>
+#include <mutex>
+#include <condition_variable>
 // Include estructuras
 #include <vector>
+
+// Mutex para la seccion critica
+static std::mutex MUTEX;
+static std::condition_variable COND;
+static bool TERMINA = false;
 
 class Message {
 private:
@@ -81,6 +87,9 @@ public:
                         case 'q': {
                             std::cout << bytes << " bytes de " << host << ":" << service << std::endl;
                             std::cout << "Saliendo..." << std::endl;
+                            std::unique_lock<std::mutex>lock(MUTEX);
+                            TERMINA = true;
+                            COND.notify_one();
                         } break;
                         default: {
                             buffer[strlen(buffer) - 1] = '\0';
@@ -149,19 +158,18 @@ int main(int argc, char **argv) {
             Message msg(sd);
             msg.HazMensaje();
         }));
-    }
+    }    
 
-    // Pequenia compribacion
-    for (int i = 0; i < pool.size(); ++i) {
-        std::cout << i << ": " << pool.at(i).get_id() << std::endl;
-    }
+    // Mutex
+    std::unique_lock<std::mutex> lock(MUTEX);
+    COND.wait(lock, [&]() { return TERMINA; });
 
     // Juntar todos los hilos
     for (int i = 0; i < pool.size(); ++i) {
         if (pool.at(i).joinable())
             pool.at(i).join();
     }
-    
+
     // Cerrar el socket
     close(sd);
 
