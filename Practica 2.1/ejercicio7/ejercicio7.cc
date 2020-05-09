@@ -28,6 +28,16 @@ public:
     // Metodo que maneja mensajes
     void HazMensaje() { 
         // ---------------------------------------------------------------------- //
+        // -- PUBLICAR EL SERVIDOR (LISTEN) ------------------------------------- //
+        // ---------------------------------------------------------------------- //
+        
+        int serv = listen(sd_, 16);
+        // Control de errores de listen
+        if (serv < 0) {
+            std::cerr << "listen: " << std::endl;
+        }
+
+        // ---------------------------------------------------------------------- //
         // -- GESTION DE LAS CONEXIONES AL SERVIDOR ----------------------------- //
         // ---------------------------------------------------------------------- //
         
@@ -54,12 +64,20 @@ public:
             ssize_t bytes = recv(sd_client, (void*) buffer, sizeof(char)*79, 0);
             if (bytes <= 0) {
                 // Mensaje de desconexion
+                std::unique_lock<std::mutex>lock(MUTEX);
+                TERMINA = true;
+                COND.notify_one();                
                 std::cout << "Conexion terminada" << std::endl;
                 return;
             }
             // Mandar el mensaje al cliente
             if (!(buffer[0] == 'Q' && strlen(buffer) <= 2))
                 send(sd_client, (void*) buffer, bytes, 0);
+            // Mensaje de control
+            std::cout << "THREAD: " << std::this_thread::get_id() << std::endl;
+            std::cout << "--------------------------" << std::endl;
+            // Tiempo de espera para los threads
+            sleep(10);
         } while(!(buffer[0] == 'Q' && strlen(buffer) <= 2));
     };
 };
@@ -99,17 +117,30 @@ int main(int argc, char **argv) {
     freeaddrinfo(res);
 
     // ---------------------------------------------------------------------- //
-    // -- PUBLICAR EL SERVIDOR (LISTEN) ------------------------------------- //
+    // --- POOL DE THREADS -------------------------------------------------- //
     // ---------------------------------------------------------------------- //
     
-    int serv = listen(sd, 16);
-    // Control de errores de listen
-    if (serv < 0) {
-        std::cerr << "error de listen: " << std::endl;
+    int nThreads = 5;
+    std::vector<std::thread> pool;
+    for (int i = 0; i < nThreads; ++i) {
+        pool.push_back(std::thread([&]() { 
+            Message msg(sd);
+            msg.HazMensaje();
+        }));
     }
 
-
+    for (int i = 0; i < nThreads; ++i) {
+        std::cout << "Thread " << i << ": " << pool.at(i).get_id() << std::endl;
+    }
     
+    // Mutex
+    std::unique_lock<std::mutex> lock(MUTEX);
+    COND.wait(lock, [&]() { return TERMINA; });
+
+    for (auto &t : pool) {
+        t.detach();
+    }
+
     // Mensaje de desconexion
     std::cout << "Conexion terminada" << std::endl;
     
