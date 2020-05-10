@@ -26,32 +26,7 @@ public:
     Message(int sd) : sd_(sd) { };
     ~Message() { };
     // Metodo que maneja mensajes
-    void HazMensaje() { 
-        // ---------------------------------------------------------------------- //
-        // -- PUBLICAR EL SERVIDOR (LISTEN) ------------------------------------- //
-        // ---------------------------------------------------------------------- //
-        
-        int serv = listen(sd_, 16);
-        // Control de errores de listen
-        if (serv < 0) {
-            std::cerr << "listen: " << std::endl;
-        }
-
-        // ---------------------------------------------------------------------- //
-        // -- GESTION DE LAS CONEXIONES AL SERVIDOR ----------------------------- //
-        // ---------------------------------------------------------------------- //
-        
-        struct sockaddr client_addr;
-        socklen_t client_len = sizeof(struct sockaddr);
-
-        char host[NI_MAXHOST];
-        char service[NI_MAXSERV];
-        
-        int sd_client = accept(sd_, &client_addr, &client_len);
-        getnameinfo(&client_addr, client_len, host, NI_MAXHOST, service, NI_MAXSERV, NI_NUMERICHOST | NI_NUMERICSERV);
-        // Mensade del servidor
-        std::cout << "Conexion desde " << host << " " << service << std::endl;
-
+    void HazMensaje(int sd_client) { 
         // ---------------------------------------------------------------------- //
         // -- GESTION DE LA CONEXION CLIENTE ------------------------------------ //
         // ---------------------------------------------------------------------- //
@@ -64,20 +39,24 @@ public:
             ssize_t bytes = recv(sd_client, (void*) buffer, sizeof(char)*79, 0);
             if (bytes <= 0) {
                 // Mensaje de desconexion
-                std::unique_lock<std::mutex>lock(MUTEX);
-                TERMINA = true;
-                COND.notify_one();                
+                //std::unique_lock<std::mutex>lock(MUTEX);
+                //TERMINA = true;
+                //COND.notify_one();                
                 std::cout << "Conexion terminada" << std::endl;
+                std::cout << "THREAD: " << std::this_thread::get_id() << std::endl;
+                std::cout << "--------------------------" << std::endl;
                 return;
             }
             // Mandar el mensaje al cliente
             if (!(buffer[0] == 'Q' && strlen(buffer) <= 2))
                 send(sd_client, (void*) buffer, bytes, 0);
             // Mensaje de control
+            buffer[strlen(buffer) - 1] = '\0';
+            std::cout << "MENSAJE: " << buffer << std::endl;
             std::cout << "THREAD: " << std::this_thread::get_id() << std::endl;
             std::cout << "--------------------------" << std::endl;
             // Tiempo de espera para los threads
-            sleep(10);
+            //sleep(10);
         } while(!(buffer[0] == 'Q' && strlen(buffer) <= 2));
     };
 };
@@ -117,28 +96,57 @@ int main(int argc, char **argv) {
     freeaddrinfo(res);
 
     // ---------------------------------------------------------------------- //
+    // -- PUBLICAR EL SERVIDOR (LISTEN) ------------------------------------- //
+    // ---------------------------------------------------------------------- //
+    
+    int serv = listen(sd, 16);
+    // Control de errores de listen
+    if (serv < 0) {
+        std::cerr << "listen: " << std::endl;
+    }
+
+    // ---------------------------------------------------------------------- //
     // --- POOL DE THREADS -------------------------------------------------- //
     // ---------------------------------------------------------------------- //
     
-    int nThreads = 5;
-    std::vector<std::thread> pool;
-    for (int i = 0; i < nThreads; ++i) {
+    std::vector<std::thread>pool;
+
+    struct sockaddr client_addr;
+    socklen_t client_len = sizeof(struct sockaddr);
+
+    char host[NI_MAXHOST];
+    char service[NI_MAXSERV];
+
+    int sd_client;
+    do {
+        // ---------------------------------------------------------------------- //
+        // -- GESTION DE LAS CONEXIONES AL SERVIDOR ----------------------------- //
+        // ---------------------------------------------------------------------- //
+               
+        sd_client = accept(sd, &client_addr, &client_len);
+        if (sd_client == -1) {
+            std::cerr << "sdclient: " << std::endl;
+            return -1;
+        }
+
+        getnameinfo(&client_addr, client_len, host, NI_MAXHOST, service, NI_MAXSERV, NI_NUMERICHOST | NI_NUMERICSERV);
+        // Mensade del servidor
+        std::cout << "Conexion desde " << host << " " << service << std::endl;
+
+        // Threads
         pool.push_back(std::thread([&]() { 
             Message msg(sd);
-            msg.HazMensaje();
+            msg.HazMensaje(sd_client);
         }));
-    }
 
-    for (int i = 0; i < nThreads; ++i) {
-        std::cout << "Thread " << i << ": " << pool.at(i).get_id() << std::endl;
-    }
+    } while (sd_client != -1);
     
     // Mutex
-    std::unique_lock<std::mutex> lock(MUTEX);
-    COND.wait(lock, [&]() { return TERMINA; });
+    //std::unique_lock<std::mutex> lock(MUTEX);
+    //COND.wait(lock, [&]() { return TERMINA; });
 
     for (auto &t : pool) {
-        t.detach();
+        t.join();
     }
 
     // Mensaje de desconexion
