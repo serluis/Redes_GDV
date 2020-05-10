@@ -8,15 +8,8 @@
 #include <iostream>
 // Includes de threads
 #include <thread>
-#include <mutex>
-#include <condition_variable>
 // Include estructuras
 #include <vector>
-
-// Mutex para la seccion critica
-static std::mutex MUTEX;
-static std::condition_variable COND;
-static bool TERMINA = false;
 
 class Message {
 private:
@@ -38,10 +31,7 @@ public:
             // Recepcion del mensaje
             ssize_t bytes = recv(sd_client, (void*) buffer, sizeof(char)*79, 0);
             if (bytes <= 0) {
-                // Mensaje de desconexion
-                //std::unique_lock<std::mutex>lock(MUTEX);
-                //TERMINA = true;
-                //COND.notify_one();                
+                // Mensaje de desconexion           
                 std::cout << "Conexion terminada" << std::endl;
                 std::cout << "THREAD: " << std::this_thread::get_id() << std::endl;
                 std::cout << "--------------------------" << std::endl;
@@ -140,10 +130,6 @@ int main(int argc, char **argv) {
         }));
 
     } while (sd_client != -1);
-    
-    // Mutex
-    //std::unique_lock<std::mutex> lock(MUTEX);
-    //COND.wait(lock, [&]() { return TERMINA; });
 
     for (auto &t : pool) {
         t.join();
