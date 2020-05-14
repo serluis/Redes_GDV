@@ -1,7 +1,7 @@
 #include "Serializable.h"
 
 #include <iostream>
-#include <ofstream>
+#include <fstream>
 #include <string>
 
 #include <sys/types.h>
@@ -63,16 +63,23 @@ public:
 int main(int argc, char **argv)
 {
     Jugador one_r("", 0, 0);
+    std::cout<<"R: "<< std::endl;
     Jugador one_w("Player_ONE", 123, 987);
+    std::cout<<"W: "<< std::endl;
     one_w.to_bin();
+    std::cout<<"Comprimir: "<<std::endl;
     one_r.from_bin(one_w.data());
-    //one_r.data();
+    std::cout<<"Descomprime R: "<< one_r.data() <<std::endl;
     std::fstream ej1;
-    ej1.open("ej1.txt");
-    ej1.write(one_r.data());
+    ej1.open("ej1.txt"); 
+    std::cout<<"crea archivo: "<<std::endl;
+    ej1.write(one_r.data(),one_r.size());
+    std::cout<<"Escrito "<<std::endl;
+    ej1.close();
     //Serializar y escribir one_w en un fichero
     //Leer el fichero en un buffer y "deserializar" en one_r
     //Mostrar el contenido one_r
-
+    std::string cosa;
+    std::cin >> cosa ;
     return 0;
 }
