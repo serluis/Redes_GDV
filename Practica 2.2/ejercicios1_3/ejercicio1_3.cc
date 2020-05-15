@@ -60,9 +60,13 @@ class Jugador : public Serializable
         memcpy(&pos_x, tmp, sizeof(int16_t));
         tmp += sizeof(int16_t);
         memcpy(&pos_y, tmp, sizeof(int16_t));
-
-        return sizeof(data);
+        if(strlen(name)<0){
+            return -1;
+        }
+        return sizeof(name);
     }
+    int16_t getX(){return pos_x;}
+    int16_t getY(){return pos_y;}
 
 };
 
@@ -77,7 +81,7 @@ int main(int argc, char **argv)
 
     // Crea o abre el archivo y guarda identif
     // con posib. de leer y escribir
-    int identif_ = open("ej1.txt", O_CREAT | O_RDWR, 0666);
+    int identif_ = open("data", O_CREAT | O_RDWR, 0666);
 
     // Escribe en el archivo
     int errW = write(identif_, one_w.data(), one_w.size());
@@ -95,26 +99,30 @@ int main(int argc, char **argv)
     close(identif_);
 
     // Vuelve a abrir para restaurar puntero
-    int identif_2 = open("ej1.txt", O_CREAT | O_RDWR, 0666);
+    int identif_2 = open("data", O_CREAT | O_RDWR, 0666);
     // Crea buffer para guardar info
     char buffer[20 * sizeof(char) + 2 * sizeof(int16_t)];
 
     // Lee de archivo y control error
     int errR = read(identif_2, buffer, one_w.size());
 
-    std::cout << "Buffer: "<< buffer << std::endl;
+    //std::cout << "Buffer: "<< buffer <<" : "<< strlen(buffer) <<" : "<<sizeof(buffer)<< std::endl;
+    //std::cout << "Leido: "<< errR << std::endl;
     if (errR == -1)
     {
         std::cout << "Leido mal" << std::endl;
         std::cout << strerror(errno) << std::endl;
         return -1;
     }
-
+    //std::cout << "antes deserializ datos: "<<one_r.getX()<<one_r.getY() << std::endl;
     // Deserializa
-    //one_r.from_bin(buffer);
+    int r_data = one_r.from_bin(buffer);
     //control de errores
     //std::string beta(one_r.data());
-    //std::cout << "Escrito en r " << beta << " : " << one_r.size() << std::endl;
+    std::cout << "Deserializado: " << 
+    one_r.getX() << " : " << 
+    one_r.getY() << " : " << 
+    buffer << std::endl;
 
     // Cierra archivo y finaliza
     std::cout << "Fin" << std::endl;
