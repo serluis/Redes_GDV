@@ -1,27 +1,30 @@
+// Include de Serializacion
 #include "Serializable.h"
-
-#include <iostream>
-#include <fstream>
-#include <string>
-
+// Includes del programa
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
+// Includes de archivos
+#include <iostream>
+#include <fstream>
+#include <string>
+// Clase jugador hereda de serializable
+class Jugador : public Serializable {
+private:
+    char name[80];
 
-class Jugador : public Serializable
-{
-  public:
-    Jugador(const char *_n, int16_t _x, int16_t _y) : x(_x), y(_y)
-    {
+    int16_t x;
+    int16_t y;
+public:
+    Jugador(const char *_n, int16_t _x, int16_t _y) : x(_x), y(_y) {
         strncpy(name, _n, 80);
     };
 
     virtual ~Jugador(){};
 
-    void to_bin()
-    {
+    void to_bin() {
         //calcula el tamaño 80+2+2
         int32_t total = 80 * sizeof(char) + 2 * sizeof(int16_t);
         //reserva el tamaño total=80+2+2
@@ -40,12 +43,8 @@ class Jugador : public Serializable
         memcpy(tmp, &y, sizeof(int16_t));
         //_data ahora esta relleno
     }
-
-    int from_bin(char *data)
-    {
-
+    int from_bin(char *data) {
         char *tmp = data;
-
         memcpy(name, tmp, 80);
         tmp += 80 * sizeof(char);
         memcpy(&x, tmp, sizeof(int16_t));
@@ -53,21 +52,13 @@ class Jugador : public Serializable
         memcpy(&y, tmp, sizeof(int16_t));
         return sizeof(data);
     }
-
-  public:
-    char name[80];
-
-    int16_t x;
-    int16_t y;
 };
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     Jugador one_r("", 0, 0);
     Jugador one_w("Player_ONE", 1, 9);
 
     one_w.to_bin();
-    //one_r.from_bin(one_w.data());
 
     int identif_ = open("ej1.txt", O_CREAT | O_RDWR, 0666);
 
@@ -85,8 +76,7 @@ int main(int argc, char **argv)
 
     int errR = read(identif_, buffer, one_w.size());
 
-    if (errR == -1)
-    {
+    if (errR == -1) {
         std::cout << "Leido mal" << std::endl;
         std::cout << strerror(errno) << std::endl;
         return -1;
