@@ -54,42 +54,57 @@ public:
     }
 };
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
+    // Crea 2 obj
     Jugador one_r("", 0, 0);
     Jugador one_w("Player_ONE", 1, 9);
 
+    // convierte W
     one_w.to_bin();
 
+    // Crea o abre el archivo y guarda identif
+    // con posib. de leer y escribir
     int identif_ = open("ej1.txt", O_CREAT | O_RDWR, 0666);
 
+    // Escribe en el archivo
     int errW = write(identif_, one_w.data(), one_w.size());
+    // Si da error notifica y cierra
     if (errW == -1)
     {
         std::cout << "Escrito mal" << std::endl;
         std::cout << strerror(errno) << std::endl;
         return -1;
     }
+    //control
     std::string alfa(one_w.data());
     std::cout << "Escrito " << alfa << " : " << one_w.size() << std::endl;
+    //Cierra el archivo
+    close(identif_);
 
+    // Vuelve a abrir para restaurar puntero
+    int identif_2 = open("ej1.txt", O_CREAT | O_RDWR, 0666);
+    // Crea buffer para guardar info
     char buffer[80 * sizeof(char) + 2 * sizeof(int16_t)];
 
-    int errR = read(identif_, buffer, one_w.size());
+    // Lee de archivo y control error
+    int errR = read(identif_2, buffer, one_w.size());
 
-    if (errR == -1) {
+    std::cout << "Buffer: "<< buffer << std::endl;
+    if (errR == -1)
+    {
         std::cout << "Leido mal" << std::endl;
         std::cout << strerror(errno) << std::endl;
         return -1;
     }
 
+    // Deserializa
     one_r.from_bin(buffer);
-
+    //control de errores
     std::string beta(one_r.data());
     std::cout << "Escrito en r " << beta << " : " << one_r.size() << std::endl;
 
-    close(identif_);
-
+    // Cierra archivo y finaliza
     std::cout << "Fin" << std::endl;
-
+    close(identif_2);
     return 0;
-}
