@@ -2,44 +2,44 @@
 #include "Chat.h"
 // Serializar: Serializar los campos type, nick y message en el buffer _data
 void ChatMessage::to_bin() {
-    alloc_data(MESSAGE_SIZE);
+   alloc_data(MESSAGE_SIZE);
     // Apuntar un puntero a data
     char *tmp = _data;
     // Copia en tmp lo que ponga en type
-    memset(tmp, type, sizeof(uint8_t));
+    memcpy(tmp, &type, sizeof(uint8_t));
     // Mueve manualmente el puntero 1 posicion
     tmp += sizeof(uint8_t);
     // Copia en tmp lo que ponga en nick
-    memset(tmp, atoi(nick.c_str()), 7 * sizeof(char));
+    memcpy(tmp, nick.c_str(), 7 * sizeof(char));
     // Mueve manualmente el puntero 7 posiciones (la 8 sera para '\0')
     tmp += (8 * sizeof(char) - sizeof(char));
     // Escribe el '\0'
-    memset(tmp, '\0', sizeof(char));
+    memcpy(tmp, '\0', sizeof(char));
     // Mueve manualmente el puntero 1 posicio (la del '\0')
     tmp += sizeof(char);
     // Copia en tmp lo que ponga en message
-    memset(tmp, atoi(message.c_str()), 79 * sizeof(char));
+    memcpy(tmp, message.c_str(), 79 * sizeof(char));
     // Mueve manualmente el puntero 79 posiciones (la 80 sera para '\0')
     tmp += (80 * sizeof(char) - sizeof(char));
     // Escribe el '\0'
-    memset(tmp, '\0', sizeof(char));
+    memcpy(tmp, '\0', sizeof(char));
 }
 // Deserializar: Reconstruir la clase usando el buffer _data
 int ChatMessage::from_bin(char * bobj) {
-    //memcpy(static_cast<void *>(_data), bobj, MESSAGE_SIZE);
+   //memcpy(static_cast<void >(_data), bobj, MESSAGE_SIZE);
     alloc_data(MESSAGE_SIZE);
     // Apunta al primer dato
-    char* tmp = bobj;
+    char tmp = bobj;
     // Copia en tmp lo que ponga en type
-    memset(&type, atoi(tmp), sizeof(int8_t));
+    memcpy(&type, tmp, sizeof(int8_t));
     // Mueve manualmente el puntero 1 posicion
     tmp += sizeof(int8_t);
     // Copia en tmp lo que ponga en nick
-    memset(&nick, atoi(tmp), 8 * sizeof(char));
+    memcpy(&nick, tmp, 8 * sizeof(char));
     // Mueve manualmente el puntero 8 posiciones
     tmp += 8 * sizeof(char);
     // Copia en tmp lo que ponga en message
-    memset(&message, atoi(tmp), 80 * sizeof(char));
+    memcpy(&message, tmp, 80 * sizeof(char));
     // Mueve manualmente el puntero 79 posiciones (la 80 sera para '\0')
     tmp += 80 * sizeof(char);
     // Control de errores de copiar los datos
