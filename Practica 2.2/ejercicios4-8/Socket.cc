@@ -22,18 +22,18 @@ Socket::Socket(const char * address, const char * port) : sd(-1) {
     int rc = getaddrinfo(address, port, &hints, &res);
     if (rc != 0) {
         std::cerr << "getaddrinfo: " << gai_strerror(rc) << std::endl;
-        return -1;
+        return;
     }
 
     // res contiene la representación como sockaddr de dirección + puerto
-    sa = res->ai_addr;
+    sa = *res->ai_addr;
     sa_len = res->ai_addrlen;
     sd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 
-    if (bind(sd, res->ai_addr, res->ai_addrlen) != 0) {
+    /*if (bind(sd, sa, sa_len) != 0) {
         std::cerr << "bind: " << std::endl;
-        return -1;
-    }
+        return;
+    }*/
     freeaddrinfo(res);
 }
 
@@ -76,8 +76,10 @@ int Socket::send(Serializable& obj, const Socket& sock) {
 // Comparar los campos sin_family, sin_addr.s_addr y sin_port
 // de la estructura sockaddr_in de los Sockets s1 y s2
 bool operator== (const Socket &s1, const Socket &s2) {
+    struct sockaddr_in* s1_ = (struct sockaddr_in*)&s1.sa;
+    struct sockaddr_in* s2_ = (struct sockaddr_in*)&s2.sa;
     // Retornar false si alguno difiere
-    return (&s1.sa.sin_family == &s2.sa.sin_family) && (&s1.sa.sin_addr.s_addr == &s2.sa.sin_addr.s_addr) && (&s1.sa.sin_port == &s2.sa.sin_port);
+    return (&s1.sa.sa_family == &s2.sa.sa_family) && (s1_->sin_addr.s_addr == s2_->sin_addr.s_addr) && (s1_->sin_port == s2_->sin_port);
 };
 
 std::ostream& operator<<(std::ostream& os, const Socket& s) {
