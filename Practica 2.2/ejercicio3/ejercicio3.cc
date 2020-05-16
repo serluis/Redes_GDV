@@ -32,7 +32,7 @@ public:
         int32_t total = MAX_NAME * sizeof(char) + 2 * sizeof(int16_t);
         // Reserva tantos datos como el tamano
         alloc_data(total);
-        // Apunta un puntero a data
+        // Apuntar un puntero a data
         char *tmp = _data;
         // Copia en tmp lo que ponga en name
         memcpy(tmp, name, MAX_NAME);
