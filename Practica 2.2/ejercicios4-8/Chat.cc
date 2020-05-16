@@ -2,7 +2,9 @@
 #include "Chat.h"
 // Serializar: Serializar los campos type, nick y message en el buffer _data
 void ChatMessage::to_bin() {
-   alloc_data(MESSAGE_SIZE);
+    alloc_data(MESSAGE_SIZE);
+    // Poner a 0 todos los datos
+    memset(_data, 0, MESSAGE_SIZE);
     // Apuntar un puntero a data
     char *tmp = _data;
     // Copia en tmp lo que ponga en type
@@ -26,10 +28,10 @@ void ChatMessage::to_bin() {
 }
 // Deserializar: Reconstruir la clase usando el buffer _data
 int ChatMessage::from_bin(char * bobj) {
-   //memcpy(static_cast<void >(_data), bobj, MESSAGE_SIZE);
+    //memcpy(static_cast<void *>(_data), bobj, MESSAGE_SIZE);
     alloc_data(MESSAGE_SIZE);
     // Apunta al primer dato
-    char tmp = bobj;
+    char* tmp = bobj;
     // Copia en tmp lo que ponga en type
     memcpy(&type, tmp, sizeof(int8_t));
     // Mueve manualmente el puntero 1 posicion
@@ -54,10 +56,40 @@ int ChatMessage::from_bin(char * bobj) {
 
 void ChatServer::do_messages() {
     while (true) {
-        //Recibir Mensajes en y en función del tipo de mensaje
-        // - LOGIN: Añadir al vector clients
-        // - LOGOUT: Eliminar del vector clients
-        // - MESSAGE: Reenviar el mensaje a todos los clientes (menos el emisor)
+        // Crear un mensaje vacio que va a rellenar el recv()
+        ChatMessage msg();
+        // Recibir Mensajes en y en función del tipo de mensaje
+        socket.recv(msg, socket);
+
+        switch(msg.type) {
+            // - LOGIN: Añadir al vector clients
+            case ChatMessage::LOGIN: {
+                clients.push_back(&socket);
+                std::cout << msg.nick << " se ha unido al chat" << std::endl;
+            } break;
+            // - MESSAGE: Reenviar el mensaje a todos los clientes (menos el emisor)
+            case ChatMessage::MESSAGE: {
+                std::cout << msg.nick << ": " << msg.message << std::endl;
+                for (int i = 0; i < clients.size(); ++i) {
+                    if (socket != clients.at(i))
+                        socket.send(msg, clients.at(i));
+                }
+            } break;
+            // - LOGOUT: Eliminar del vector clients
+            case ChatMessage::LOGOUT: {
+                std::cout << msg.nick << " se ha ido del chat" << std::endl;
+                bool erased = false;
+                for (int i = 0; i < clients.size() && !erased; ++i) {
+                    if (socket == clients.at(i)) {
+                        clients.erase(socket);
+                        erased = true;
+                    }
+                }
+            } break;
+            default: { 
+                std::cout << "no msg: " << std::endl;
+            } break;
+        }
     }
 }
 
@@ -73,6 +105,7 @@ void ChatClient::login() {
 void ChatClient::logout() {
 
 }
+
 void ChatClient::input_thread() {
     while (true) {
         // Leer stdin con std::getline
