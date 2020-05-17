@@ -4,6 +4,18 @@
 // Dependencias de C
 #include <string.h>
 
+// Archivos
+// Includes del programa
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <string.h>
+#include <unistd.h>
+// Includes de archivos
+#include <iostream>
+#include <fstream>
+#include <string>
+
 Socket::Socket(const char * address, const char * port) : sd(-1) {
     // Construir un socket de tipo AF_INET y SOCK_DGRAM usando getaddrinfo.
     // Con el resultado inicializar los miembros sd, sa y sa_len de la clase
@@ -60,6 +72,17 @@ int Socket::recv(Serializable &obj, Socket * &sock) {
 int Socket::send(Serializable& obj, const Socket& sock) {
     // Serializar el objeto
     obj.to_bin();
+        // Crear el fichero
+    int id = open("data", O_CREAT | O_RDWR, 0666);
+    // Escribir en el fichero
+    int errW = write(id, obj.data(), obj.size());
+    // Control de errores al escribir
+    if (errW == -1) {
+        std::cout << "Error write: " << std::endl;
+        return -1;
+    }
+    // Cerrar el archivo al escribir
+    close(id);
     // Enviar el objeto binario a sock usando el socket sd
     int err = sendto(sd, obj.data(), MAX_MESSAGE_SIZE, 0, &sock.sa, sock.sa_len);
     if (err == -1) {

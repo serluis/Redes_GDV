@@ -13,18 +13,12 @@ void ChatMessage::to_bin() {
     tmp += sizeof(uint8_t);
     // Copia en tmp lo que ponga en nick
     memcpy(tmp, nick.c_str(), 7 * sizeof(char));
-    // Mueve manualmente el puntero 7 posiciones (la 8 sera para '\0')
-    tmp += (8 * sizeof(char) - sizeof(char));
-    // Escribe el '\0'
-    memcpy(tmp, '\0', sizeof(char));
-    // Mueve manualmente el puntero 1 posicio (la del '\0')
-    tmp += sizeof(char);
+    // Mueve manualmente el puntero 8 posiciones (la 8 sera para '\0')
+    tmp += 8 * sizeof(char);
     // Copia en tmp lo que ponga en message
     memcpy(tmp, message.c_str(), 79 * sizeof(char));
-    // Mueve manualmente el puntero 79 posiciones (la 80 sera para '\0')
-    tmp += (80 * sizeof(char) - sizeof(char));
-    // Escribe el '\0'
-    memcpy(tmp, '\0', sizeof(char));
+    // Mueve manualmente el puntero 80 posiciones (la 80 sera para '\0')
+    tmp += 80 * sizeof(char);
 }
 // Deserializar: Reconstruir la clase usando el buffer _data
 int ChatMessage::from_bin(char * bobj) {
@@ -59,7 +53,8 @@ void ChatServer::do_messages() {
         // Crear un mensaje vacio que va a rellenar el recv()
         ChatMessage* msg = new ChatMessage();
         // Recibir Mensajes en y en función del tipo de mensaje
-        socket.recv(*msg);
+        socket.recv(*msg, (Socket*&) *(&socket));
+        std::cout << "hasta qui pueo leer" << std::endl;
 
         switch(msg->type) {
             // - LOGIN: Añadir al vector clients
@@ -96,11 +91,15 @@ void ChatServer::do_messages() {
 }
 
 void ChatClient::login() {
-    std::string msg;
-
+    // Mensaje del login
+    std::string msg = "Usuario '" + nick + "' se ha registrado.";
+    // LO muestra por pantalla
+    std::cout << msg << std::endl;
+    // Crea un nuevo mensaje
     ChatMessage em(nick, msg);
+    // Que sera de tpo LOGIN
     em.type = ChatMessage::LOGIN;
-
+    // Y lo envia al servidor, con el respectivo socket
     socket.send(em, socket);
 }
 
