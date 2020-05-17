@@ -57,33 +57,35 @@ int ChatMessage::from_bin(char * bobj) {
 void ChatServer::do_messages() {
     while (true) {
         // Crear un mensaje vacio que va a rellenar el recv()
-        ChatMessage msg();
+        ChatMessage* msg = new ChatMessage();
         // Recibir Mensajes en y en función del tipo de mensaje
-        socket.recv(msg, socket);
+        socket.recv(*msg);
 
-        switch(msg.type) {
+        switch(msg->type) {
             // - LOGIN: Añadir al vector clients
             case ChatMessage::LOGIN: {
                 clients.push_back(&socket);
-                std::cout << msg.nick << " se ha unido al chat" << std::endl;
+                std::cout << msg->nick << " se ha unido al chat" << std::endl;
             } break;
             // - MESSAGE: Reenviar el mensaje a todos los clientes (menos el emisor)
             case ChatMessage::MESSAGE: {
-                std::cout << msg.nick << ": " << msg.message << std::endl;
+                std::cout << msg->nick << ": " << msg->message << std::endl;
                 for (int i = 0; i < clients.size(); ++i) {
-                    if (socket != clients.at(i))
-                        socket.send(msg, clients.at(i));
+                    if (socket == *clients.at(i)) { /* NO HAGAS NADA */}
+                    else socket.send(*msg, *clients.at(i));
                 }
             } break;
             // - LOGOUT: Eliminar del vector clients
             case ChatMessage::LOGOUT: {
-                std::cout << msg.nick << " se ha ido del chat" << std::endl;
+                std::cout << msg->nick << " se ha ido del chat" << std::endl;
                 bool erased = false;
+                std::vector<Socket*>::iterator it = clients.begin();
                 for (int i = 0; i < clients.size() && !erased; ++i) {
-                    if (socket == clients.at(i)) {
-                        clients.erase(socket);
+                    if (socket == *clients.at(i)) {
+                        clients.erase(it);
                         erased = true;
                     }
+                    ++it;
                 }
             } break;
             default: { 
