@@ -79,6 +79,7 @@ private:
     Socket socket;
     // Nick del usuario
     std::string nick;
+    bool conn;
 public:
     /**
      * @param s dirección del servidor
