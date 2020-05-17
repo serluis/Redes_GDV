@@ -34,7 +34,7 @@ public:
         LOGOUT  = 2
     };
     // Constructora y destructora
-    ChatMessage(){};
+    ChatMessage() { };
     ChatMessage(const std::string& n, const std::string& m):nick(n),message(m){};
     
     // Serielizacion
@@ -79,6 +79,7 @@ private:
     Socket socket;
     // Nick del usuario
     std::string nick;
+    // Booleano de control de conexion
     bool conn;
 public:
     /**
@@ -87,7 +88,7 @@ public:
      * @param n nick del usuario
      */
     ChatClient(const char * s, const char * p, const char * n)
-        : socket(s, p), nick(n){};
+        : socket(s, p), nick(n) { };
     
     // Envía el mensaje de login al servidor
     void login();
