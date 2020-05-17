@@ -12,36 +12,37 @@ void ChatMessage::to_bin() {
     // Mueve manualmente el puntero 1 posicion
     tmp += sizeof(uint8_t);
     // Copia en tmp lo que ponga en nick
-    memcpy(tmp, nick.c_str(), 7 * sizeof(char));
+    memcpy(tmp, nick.c_str(), strlen(nick.c_str()));
     // Mueve manualmente el puntero 8 posiciones (la 8 sera para '\0')
     tmp += 8 * sizeof(char);
     // Copia en tmp lo que ponga en message
-    memcpy(tmp, message.c_str(), 79 * sizeof(char));
-    // Mueve manualmente el puntero 80 posiciones (la 80 sera para '\0')
-    tmp += 80 * sizeof(char);
+    memcpy(tmp, message.c_str(), strlen(message.c_str()));
 }
 // Deserializar: Reconstruir la clase usando el buffer _data
 int ChatMessage::from_bin(char * bobj) {
-    //memcpy(static_cast<void *>(_data), bobj, MESSAGE_SIZE);
     alloc_data(MESSAGE_SIZE);
     // Apunta al primer dato
     char* tmp = bobj;
-    // Copia en tmp lo que ponga en type
+    // Copia en type lo que ponga en tmp
     memcpy(&type, tmp, sizeof(int8_t));
     // Mueve manualmente el puntero 1 posicion
     tmp += sizeof(int8_t);
-    // Copia en tmp lo que ponga en nick
-    memcpy(&nick, tmp, 8 * sizeof(char));
+    // Copia en nick lo que ponga en tmp
+    char name[8];
+    memcpy(name, tmp, 8 * sizeof(char));
+    nick = name;
+    std::cout << name << std::endl;
     // Mueve manualmente el puntero 8 posiciones
     tmp += 8 * sizeof(char);
-    // Copia en tmp lo que ponga en message
-    memcpy(&message, tmp, 80 * sizeof(char));
-    // Mueve manualmente el puntero 79 posiciones (la 80 sera para '\0')
-    tmp += 80 * sizeof(char);
+    // Copia en message lo que ponga en tmp
+    char msg[80];
+    memcpy(&msg, tmp, 80 * sizeof(char));
+    message = msg;
+    std::cout << message <<std::endl;
     // Control de errores de copiar los datos
-    if ((strlen(nick.c_str()) + strlen(message.c_str())) < 0)
+    if (nick.length() + message.length() < 0) 
         return -1;
-    return strlen(nick.c_str()) + strlen(message.c_str());
+    return nick.length() + message.length();
 }
 
 // ----------------------------------------------------------------------------- //
@@ -54,8 +55,6 @@ void ChatServer::do_messages() {
         ChatMessage* msg = new ChatMessage();
         // Recibir Mensajes en y en función del tipo de mensaje
         socket.recv(*msg, (Socket*&) *(&socket));
-        std::cout << "hasta qui pueo leer" << std::endl;
-
         switch(msg->type) {
             // - LOGIN: Añadir al vector clients
             case ChatMessage::LOGIN: {

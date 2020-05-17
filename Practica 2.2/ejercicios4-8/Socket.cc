@@ -6,13 +6,10 @@
 
 // Archivos
 // Includes del programa
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <string.h>
 #include <unistd.h>
 // Includes de archivos
-#include <iostream>
 #include <fstream>
 #include <string>
 
@@ -42,10 +39,6 @@ Socket::Socket(const char * address, const char * port) : sd(-1) {
     sa_len = res->ai_addrlen;
     sd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 
-    /*if (bind(sd, sa, sa_len) != 0) {
-        std::cerr << "bind: " << std::endl;
-        return;
-    }*/
     freeaddrinfo(res);
 }
 
@@ -53,9 +46,9 @@ int Socket::recv(Serializable &obj, Socket * &sock) {
     struct sockaddr sa;
     socklen_t sa_len = sizeof(struct sockaddr);
 
-    char buffer[MAX_MESSAGE_SIZE];
+    char buffer[90];
 
-    ssize_t bytes = ::recvfrom(sd, buffer, MAX_MESSAGE_SIZE, 0, &sa, &sa_len);
+    ssize_t bytes = ::recvfrom(sd, buffer, sizeof(buffer), 0, &sa, &sa_len);
     if (bytes <= 0) {
         std::cerr << "bytes: " << std::endl;
         return -1;
