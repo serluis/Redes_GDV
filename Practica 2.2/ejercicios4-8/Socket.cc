@@ -37,7 +37,12 @@ Socket::Socket(const char * address, const char * port) : sd(-1) {
     // res contiene la representación como sockaddr de dirección + puerto
     sa = *res->ai_addr;
     sa_len = res->ai_addrlen;
+
     sd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+    std::cout << " IP:PORT SERVIDOR: " << address << ":" << port << std::endl;
+    if (sd < 0) {
+        std::cerr << "socket: error" << std::endl;
+    }
 
     freeaddrinfo(res);
 }
@@ -47,23 +52,16 @@ int Socket::recv(Serializable &obj, Socket * &sock) {
     socklen_t sa_len = sizeof(struct sockaddr);
 
     // Coger la informacion
-    char buffer[MAX_MESSAGE_SIZE];
-    char host[NI_MAXHOST];
-    char service[NI_MAXSERV];
+    char buffer[90];
 
     ssize_t bytes = ::recvfrom(sd, buffer, sizeof(buffer), 0, &sa, &sa_len);
     if (bytes <= 0) {
         std::cerr << "bytes: " << std::endl;
         return -1;
     }
-    int err = getnameinfo(&sa, sa_len, host, NI_MAXHOST, service, NI_MAXSERV, NI_NUMERICHOST | NI_NUMERICSERV);
-    // Control de errores en getnameinfo
-    if (err != 0) {
-        std::cerr << "getnameinfo: " << std::endl;
-        return -1;
-    }
     if (sock != 0)
         sock = new Socket(&sa, sa_len);
+    std::cout << " IP:PORT CLIENTE: " << sock << std::endl;
 
     obj.from_bin(buffer);
 
@@ -73,7 +71,7 @@ int Socket::recv(Serializable &obj, Socket * &sock) {
 int Socket::send(Serializable& obj, const Socket& sock) {
     // Serializar el objeto
     obj.to_bin();
-        // Crear el fichero
+    // DEBUG CON FICHERO PARA SABER QUE CONTIENE DATA
     int id = open("data", O_CREAT | O_RDWR, 0666);
     // Escribir en el fichero
     int errW = write(id, obj.data(), obj.size());
@@ -85,7 +83,7 @@ int Socket::send(Serializable& obj, const Socket& sock) {
     // Cerrar el archivo al escribir
     close(id);
     // Enviar el objeto binario a sock usando el socket sd
-    int err = sendto(sd, obj.data(), MAX_MESSAGE_SIZE, 0, &sock.sa, sock.sa_len);
+    int err = sendto(sd, obj.data(), obj.size(), 0, &sock.sa, sock.sa_len);
     if (err == -1) {
         std::cerr << "err sendto: " << std::endl;
         return -1;

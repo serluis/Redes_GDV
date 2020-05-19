@@ -52,27 +52,28 @@ void ChatServer::do_messages() {
         // Crear un mensaje vacio que va a rellenar el recv()
         ChatMessage* msg = new ChatMessage();
 
+        Socket *sock;
         // Recibir Mensajes en y en función del tipo de mensaje
-        socket.recv(*msg, (Socket*&) *(&socket));
+        socket.recv(*msg, sock);
 
         switch(msg->type) {
             // - LOGIN: Añadir al vector clients
             case ChatMessage::LOGIN: {
-                clients.push_back(&socket);
+                clients.push_back(sock);
                 std::cout << "<'"<< msg->nick << "' se ha unido al chat>" << std::endl;
+                std::cout << " Socket metido en el vector: " << sock << std::endl;
             } break;
             // - MESSAGE: Reenviar el mensaje a todos los clientes (menos el emisor)
             case ChatMessage::MESSAGE: {
                 std::cout << msg->nick << ": " << msg->message << std::endl;
-                /*for (int i = 0; i < clients.size(); ++i) {
-                    std::cout << "Socket: " << socket << std::endl;
-                    std::cout << "Sock Cliente " << i << ": " << *clients.at(i) << std::endl;
-                    if (socket == *clients.at(i)) { } // NO HAGAS NADA
-                    else {
-                        std::cout << "Enviando a cliente " << i << ": " << *clients.at(i) << std::endl;
-                        socket.send(*msg, *clients.at(i));
+                for (int i = 0; i < clients.size(); ++i) {
+                    //std::cout << "Socket: " << socket << std::endl;
+                    //std::cout << "Sock Cliente " << i << ": " << *clients.at(i) << std::endl;
+                    if (!(*sock == *clients.at(i))) { 
+                        //std::cout << "Enviando a cliente " << i << ": " << *clients.at(i) << std::endl;
+                        //socket.send(*msg, *clients.at(i));
                     }
-                }*/
+                }
             } break;
             // - LOGOUT: Eliminar del vector clients
             case ChatMessage::LOGOUT: {
@@ -80,7 +81,7 @@ void ChatServer::do_messages() {
                 bool erased = false;
                 std::vector<Socket*>::iterator it = clients.begin();
                 for (int i = 0; i < clients.size() && !erased; ++i) {
-                    if (socket == *clients.at(i)) {
+                    if (*sock == *clients.at(i)) {
                         clients.erase(it);
                         erased = true;
                     }
@@ -146,8 +147,7 @@ void ChatClient::net_thread() {
     while(conn) {
         ChatMessage em;
         // Recibir Mensajes de red
-        std::cout << socket << std::endl;
-        socket.recv(em, (Socket*&) *(&socket));
+        socket.recv(em);
 
         // Mostrar en pantalla el mensaje de la forma "nick: mensaje"
         if(em.type == ChatMessage::MESSAGE)
