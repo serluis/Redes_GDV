@@ -61,17 +61,17 @@ void ChatServer::do_messages() {
             case ChatMessage::LOGIN: {
                 clients.push_back(sock);
                 std::cout << "<'"<< msg->nick << "' se ha unido al chat>" << std::endl;
-                std::cout << " Socket metido en el vector: " << sock << std::endl;
+                std::cout << " Socket metido en el vector: " << *sock << std::endl;
             } break;
             // - MESSAGE: Reenviar el mensaje a todos los clientes (menos el emisor)
             case ChatMessage::MESSAGE: {
                 std::cout << msg->nick << ": " << msg->message << std::endl;
+                std::cout << "Socket SERVIDOR: " << socket << std::endl;
                 for (int i = 0; i < clients.size(); ++i) {
-                    //std::cout << "Socket: " << socket << std::endl;
-                    //std::cout << "Sock Cliente " << i << ": " << *clients.at(i) << std::endl;
+                    std::cout << "Sock CLIENTE " << i << ": " << *clients.at(i) << std::endl;
                     if (!(*sock == *clients.at(i))) { 
-                        //std::cout << "Enviando a cliente " << i << ": " << *clients.at(i) << std::endl;
-                        //socket.send(*msg, *clients.at(i));
+                        std::cout << "Enviando a cliente " << i << ": " << *clients.at(i) << std::endl;
+                        socket.send(*msg, *clients.at(i));
                     }
                 }
             } break;
