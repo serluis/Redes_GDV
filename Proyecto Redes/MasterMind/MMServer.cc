@@ -14,7 +14,12 @@ int main(int argc, char** argv) {
     // -- GESTION DE LAS CONEXIONES AL SERVIDOR ----------------------------- //
     // ---------------------------------------------------------------------- //
     do {
-        //int sd_client = accept(server.getSocket(), )
+        int sd_client_one = server.getSocket().accept();
+        int sd_client_two = server.getSocket().accept();
+
+        pool.push_back(std::thread([&]() {
+            
+        }));
     } while (true);
 
     // Juntar los threads (el programa no termina hasta que no han terminado todos)

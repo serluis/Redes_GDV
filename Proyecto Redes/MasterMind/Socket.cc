@@ -54,7 +54,7 @@ int Socket::bind() {
     int bind = ::bind(sd, (const struct sockaddr *) &sa, sa_len);
     if (bind != 0) {
         std::cerr << "bind: " << std::endl;
-        return;
+        return -1;
     }
 
     // ---------------------------------------------------------------------- //
@@ -65,10 +65,19 @@ int Socket::bind() {
     // Control de errores de listen
     if (serv < 0) {
         std::cerr << "listen: " << std::endl;
-        return;
+        return -1;
     }
 
     return bind;
+}
+
+int Socket::accept() {
+    int accept = ::accept(sd, &sa, &sa_len);
+    if (accept == -1) {
+        std::cerr << "sdclient: " << std::endl;
+        return -1;
+    }
+    return accept;
 }
 
 int Socket::recv(Serializable &obj, Socket * &sock) {
