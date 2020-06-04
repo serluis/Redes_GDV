@@ -2,40 +2,43 @@
 #include <unistd.h>
 #include <vector>
 
-void draw_forms()//tablero
+void tablero()//tablero
 {
     XLDisplay& dpy = XLDisplay::display();
-    /*dpy.set_color(XLDisplay::RED);
-    dpy.point(50,50);
+    /*dpy.point(50,50);
     dpy.line(20,20,100,50);
-    dpy.set_color(XLDisplay::BROWN);
     dpy.circle(45,45,15);
-    dpy.set_color(XLDisplay::BLUE);
     dpy.rectangle(60,60,30,15);
     XPoint pts[] = {{100,100},{130,130},{100,130},{100,100}};
-    dpy.set_color(XLDisplay::YELLOW);
-    dpy.lines(pts, 4);
-    dpy.set_color(XLDisplay::GREEN);
-    dpy.text(90, 80, "HOLA MUNDO!");*/
+    dpy.lines(pts, 4);*/
+    dpy.set_color(XLDisplay::PERU);
+    dpy.rectangleFill(10,10,380,440);
     dpy.set_color(XLDisplay::GREEN);
     dpy.rectangle(10,10,380,440);
     dpy.set_color(XLDisplay::RED);
     dpy.rectangle(12,12,376,436);
     dpy.text(150, 25, "MasterMind");
+    dpy.set_color(XLDisplay::SIENNA);
+    for(int i=0;i<12;i++){
+        for(int j=0;j<4;j++){
+            dpy.circle(45*(j+1),35*(i+1),10);
+            dpy.circle(200 + (j+1)*20,35*(i+1),5);
+        }
+    }
     dpy.flush();
 }
 int * redondeles(int turno)
 {
     bool acabado = false;
+    tablero();
     XLDisplay& dpy = XLDisplay::display();
     dpy.set_color(XLDisplay::RED);
     for(int i=0;i<4;i++){
-        dpy.circle(45*(i+1),45*(turno+1),15);
+        dpy.circle(45*(i+1),35*(turno+1),10);
     }
     int comb [4] = {0,0,0,0};
     int pos = 0;
     while(!acabado){
-        draw_forms();
         char dir = dpy.wait_key();
         switch (dir)
         {
@@ -71,8 +74,9 @@ int * redondeles(int turno)
                         pos++;
                     }
                     break;
-            case 45:
-                    acabado = true;
+            case 'l':
+                    //acabado = true;
+                    turno++;
                     break;
             default:
                 break;
@@ -122,7 +126,7 @@ int * redondeles(int turno)
             default:
                 break;
         }
-        dpy.circle(45*(pos+1),45*(turno+1),15);
+        dpy.circle(45*(pos+1),35*(turno+1),10);
     }
     return comb;
 }
