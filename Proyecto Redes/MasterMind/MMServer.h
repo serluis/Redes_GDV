@@ -1,6 +1,8 @@
 // Sockets
 #include "Serializable.h"
 #include "Socket.h"
+// Juego
+#include "Game.h"
 // Threads
 #include <thread>
 // Estructuras
@@ -19,6 +21,7 @@ public:
         socket.bind();
     };
     ~MMServer() {};
+    
     // Getters y setters
     Socket getSocket() { return socket; };
 };

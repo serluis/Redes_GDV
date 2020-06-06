@@ -18,7 +18,10 @@ int main(int argc, char** argv) {
         int sd_client_two = server.getSocket().accept();
 
         pool.push_back(std::thread([&]() {
-            
+            GameServer MasterMind(sd_client_one, sd_client_two);
+            do {
+                MasterMind.update();
+            } while(!MasterMind.getEnd());
         }));
     } while (true);
 
