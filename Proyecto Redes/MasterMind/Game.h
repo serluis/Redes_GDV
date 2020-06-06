@@ -30,8 +30,6 @@ private:
     int width, heigth;
     // Booleano de fin del juego
     bool end;
-    // Ventana
-    XLDisplay& dpy;
 public:
     // Constructora y destructora
     GameClient(int w, int h) 
@@ -42,6 +40,7 @@ public:
 
     // Metodos especificos del juego 
     void init();
+    void drawBoard(XLDisplay& dpy);
 
     // Metodos tradicionales del juego
     void handleInput();

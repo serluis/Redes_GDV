@@ -17,15 +17,41 @@
 // Referencia: https://tronche.com/gui/x/xlib/
 // -----------------------------------------------------------------------------
 class XLDisplay {
+private:
+    XLDisplay() = default;
+
+    static const char * font;
+
+    static std::unique_ptr<XLDisplay> _display;
+
+    // ------------------------------------------------------------------------- //
+    // --- Xlib variables ------------------------------------------------------ //
+    // ------------------------------------------------------------------------- //
+    static Display * xl_dpy;
+
+    static Window    xl_wdw;
+
+    static GC        xl_gc;
+
+    static Colormap  xl_cm;
+
+    static XFontStruct* xl_font;
+
+    static std::vector<int> xl_colors;
 public:
     enum XLColor {
-        RED    = 0,
-        BROWN  = 1,
-        BLUE   = 2,
-        YELLOW = 3,
-        GREEN  = 4,
-        WHITE  = 5,
-        BLACK  = 6
+        RED     = 0,
+        ORANGE  = 1,
+        YELLOW  = 2,
+        GREEN   = 3,
+        BLUE    = 4,
+        PURPLE  = 5,
+        FUCHSIA = 6,
+        SIENNA  = 7,
+        PERU    = 8,
+        BROWN   = 9,
+        WHITE   = 10,
+        BLACK   = 11
     };
 
     // -------------------------------------------------------------------------
@@ -73,7 +99,7 @@ public:
         XDrawLine(xl_dpy, xl_wdw, xl_gc,x1,y1,x2,y2);
     }
 
-    // Dibuja una serie de líneas cuyos vértices están dados en un array de estructuras XPoint.
+    // Dibuja una serie de lineas cuyos vértices están dados en un array de estructuras XPoint.
     // XPoint pts [] = {{0,0},{15,15},{0,15},{0,0}}
     // int npoints = 4;
     void lines(XPoint * points, int npoints) {
@@ -85,9 +111,14 @@ public:
         XDrawArc(xl_dpy, xl_wdw, xl_gc, x-r, y - r, 2 * r, 2 * r, 0, 360*64);
     }
 
-    // Dibuja un rectángulo con vértice superior-izquierdo en (x,y), ancho w y alto h
+    // Dibuja un rectangulo con vertice superior-izquierdo en (x,y), ancho w y alto h
     void rectangle(int32_t x, int32_t y, int32_t w, int32_t h) {
         XDrawRectangle(xl_dpy, xl_wdw, xl_gc, x, y, w, h);
+    }
+
+    // Dibuja un rectangulo relleno con vertice superior izquierdo en (x,y), ancho w y alto h
+    void rectangleFill(int32_t x, int32_t y, int32_t w, int32_t h){
+        XFillRectangle(xl_dpy, xl_wdw, xl_gc, x, y, w, h);
     }
 
     // Escribe un texto en la posición (x,y)
@@ -112,27 +143,6 @@ public:
     //Espera por la pulsación de una tecla, que devuelve la función
     char wait_key();
 
-private:
-    XLDisplay() = default;
-
-    static const char * font;
-
-    static std::unique_ptr<XLDisplay> _display;
-
-    // ------------------------------------------------------------------------- //
-    // --- Xlib variables ------------------------------------------------------ //
-    // ------------------------------------------------------------------------- //
-    static Display * xl_dpy;
-
-    static Window    xl_wdw;
-
-    static GC        xl_gc;
-
-    static Colormap  xl_cm;
-
-    static XFontStruct* xl_font;
-
-    static std::vector<int> xl_colors;
 };
 
 #endif
