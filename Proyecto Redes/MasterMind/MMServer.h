@@ -11,8 +11,7 @@
 class MMServer {
 private:
     // 2 clientes
-    Socket* client_one;
-    Socket* client_two;
+    //Socket* client_one, client_two;
     // Socket del servidor
     Socket socket;
 public:

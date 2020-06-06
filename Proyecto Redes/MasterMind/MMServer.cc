@@ -11,19 +11,23 @@ int main(int argc, char** argv) {
     std::vector<std::thread> pool;
 
     // ---------------------------------------------------------------------- //
-    // -- GESTION DE LAS CONEXIONES AL SERVIDOR ----------------------------- //
+    // --- GESTION DE LAS CONEXIONES AL SERVIDOR ---------------------------- //
     // ---------------------------------------------------------------------- //
-    do {
+    //do {
         int sd_client_one = server.getSocket().accept();
+        std::cout << sd_client_one << std::endl;
         int sd_client_two = server.getSocket().accept();
+        std::cout << sd_client_two << std::endl;
 
         pool.push_back(std::thread([&]() {
             GameServer MasterMind(sd_client_one, sd_client_two);
+            int i = 0;
             do {
+                std::cout << "iteration i = " << i << std::endl; ++i;
                 MasterMind.update();
-            } while(!MasterMind.getEnd());
+            } while(i <= 100);
         }));
-    } while (true);
+    //} while (true);
 
     // Juntar los threads (el programa no termina hasta que no han terminado todos)
     for (auto &t : pool)

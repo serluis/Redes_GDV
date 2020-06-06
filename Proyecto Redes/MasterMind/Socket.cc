@@ -19,7 +19,7 @@ Socket::Socket(const char * address, const char * port) : sd(-1) {
     struct addrinfo *res;
 
     // ---------------------------------------------------------------------- //
-    // -- INICIALIZACIÓN SOCKET & BIND -------------------------------------- //
+    // --- INICIALIZACIÓN SOCKET & BIND ------------------------------------- //
     // ---------------------------------------------------------------------- //
 
     // Resetear la memoria desde hints hasta hints + addrinfo
@@ -41,7 +41,6 @@ Socket::Socket(const char * address, const char * port) : sd(-1) {
     sa_len = res->ai_addrlen;
 
     sd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-    std::cout << " IP:PORT SERVIDOR: " << address << ":" << port << std::endl;
     if (sd < 0) {
         std::cerr << "socket: error" << std::endl;
     }
@@ -58,7 +57,7 @@ int Socket::bind() {
     }
 
     // ---------------------------------------------------------------------- //
-    // -- PUBLICAR EL SERVIDOR (LISTEN) ------------------------------------- //
+    // --- PUBLICAR EL SERVIDOR (LISTEN) ------------------------------------ //
     // ---------------------------------------------------------------------- //
     
     int serv = listen(sd, 16);
@@ -72,11 +71,21 @@ int Socket::bind() {
 }
 
 int Socket::accept() {
+    // Aceptar cualquier conexion entrante
     int accept = ::accept(sd, &sa, &sa_len);
     if (accept == -1) {
         std::cerr << "sdclient: " << std::endl;
         return -1;
     }
+
+    // Mensaje para saber de donde es la conexion
+    char host[NI_MAXHOST];
+    char service[NI_MAXSERV];
+    // Coger la informacion
+    getnameinfo(&sa, sa_len, host, NI_MAXHOST, service, NI_MAXSERV, NI_NUMERICHOST | NI_NUMERICSERV);
+    // Mensade del servidor
+    std::cout << "Conexion desde " << host << " " << service << std::endl;
+    
     return accept;
 }
 
@@ -123,9 +132,10 @@ int Socket::send(Serializable& obj, const Socket& sock) {
     return 0;
 }
 
-// ------------------ //
-// --- OPERADORES --- //
-// ------------------ //
+// ---------------------------------------------------------------------- //
+// --- OPERADORES ------------------------------------------------------- //
+// ---------------------------------------------------------------------- //
+    
 
 // Comparar los campos sin_family, sin_addr.s_addr y sin_port
 // de la estructura sockaddr_in de los Sockets s1 y s2
