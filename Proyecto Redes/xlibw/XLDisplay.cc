@@ -64,7 +64,7 @@ void XLDisplay::init(int32_t w, int32_t h, const std::string& t)
     //Inicializa el mapa de colores
     xl_cm =  DefaultColormap(xl_dpy, DefaultScreen(xl_dpy));
 
-    std::vector<std::string> named = {"red", "brown", "blue", "yellow", "green","purple","orange","fuchsia","white","black"};
+    std::vector<std::string> named = {"red", "brown", "blue", "yellow", "green","purple","orange","fuchsia","white","black","peru","sienna"};
 
     for (auto nc : named)
     {

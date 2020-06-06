@@ -28,7 +28,9 @@ public:
         ORANGE  = 6,
         FUCHSIA = 7,
         WHITE   = 8,
-        BLACK   = 9
+        BLACK   = 9,
+        PERU    = 10,
+        SIENNA  = 11,
     };
  // -------------------------------------------------------------------------
     // Constructores. Implementa el patrón singleton
@@ -94,6 +96,7 @@ public:
     void circle(int32_t x, int32_t y, int32_t r)
     {
         XDrawArc(xl_dpy, xl_wdw, xl_gc, x-r, y - r, 2 * r, 2 * r, 0, 360*64);
+        XFillArc(xl_dpy, xl_wdw, xl_gc, x-r, y - r, 2 * r, 2 * r, 0, 360*64);
     }
 // Dibuja un rectángulo con vértice superior-izquierdo en (x,y), ancho w
     // y alto h
@@ -101,7 +104,9 @@ public:
     {
         XDrawRectangle(xl_dpy, xl_wdw, xl_gc, x, y, w, h);
     }
-
+    void rectangleFill(int32_t x, int32_t y, int32_t w, int32_t h){
+        XFillRectangle(xl_dpy, xl_wdw, xl_gc, x, y, w, h);
+    }
     // Escribe un texto en la posición (x,y)
     void text(int32_t x, int32_t y, const std::string& txt)
      {

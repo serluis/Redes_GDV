@@ -181,6 +181,11 @@ int main(int argc, char** argv)
     int finPartida = 0, turno = 0, ronda = 0;
     //crear un vector de arrays con la partida completa para pintar
     //vector <int []>
+    std::vector <int[]> partida;
+    for(int i=0;i<12;i++){
+        push_back(new int [4]={0,0,0,0});
+    }
+    v.at(i)[0]
     //enviar datos al server
         //socket y bind
     //pintar el tablero
