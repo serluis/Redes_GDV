@@ -237,35 +237,13 @@ void wait()
 
     sleep(1);
 }
-/*void probar(){//recibe puntero del vector de partida
-    //bucle principal
-            while(){
-                //borrar lo pintado?
-                dpy.clear();
-                dpy.flush();
-                //bucle interno cond fin partida win, end
-                //seleccionar contraseña pintando
-                //OJO AL TURNO
-                redondeles(0);
-                //posibilidad de salir, cerrar partida en ambos
-                //enviar contraseña
-                
-                //esperar turno oponente
-                //recibir respuesta y pintar
-                //comprobar ganador
-}
-void esperar(){//recibe puntero del vector de partida
-    //recibir respuesta
-                //pintar (metodo aparte)
-                //comprobar ganador
-}*/
 
 int main(int argc, char** argv)
 {
     // fin=1 end, turno=1 tu turno
     int finPartida = 0, turno = 0, ronda = 0;
     //crear un vector de arrays con la partida completa para pintar
-   std::vector<vector<int>> part(R);
+    std::vector<vector<int>> part(R);
 	
 	for (int i = 0; i < part.size(); i++) {
 		part[i].resize(C);
@@ -273,24 +251,54 @@ int main(int argc, char** argv)
 			part.at(i).at(j) = 11;
 		}
 	}
-    //v.at(i)[0] //acceso
+    
     //enviar datos al server
         //socket y bind
+
     //pintar el tablero
     XLDisplay::init(400, 450, "MasterMind");
-    //tablero();
     pintar(part);
+
     //esperar turno player 1 o 2 por parte del server
-        //receive 0000 0000 1 1 
+    // recibe un 1 si es su turno y 0 si no
+        //player 1
+        //receive 0000 0000 1 
+        //player 2
+        //receive 0000 0000 0
+    //pone ese uno o cero en la variable turno
+    
     /*while(ronda < 12 && finPartida == 0){
+       
         if(turno == 1){
-           // probar();
+            proceso enviar();
+            //incluye pintado especial
+            //devuelve la contraseña del cliente
+            proceso recibir();//pone finpartida a 0 o 1
+            pintar(part);
+            if(finpartida==1){
+                proceso ganar();
+                //salir bucle
+            }
+            else{
+                turno=0;
+            }
+            ronda++;        
         }
-        else{//0000 0000 0 0
-            //esperar();
+        else{
+            
+            //recibe la jugada del oponente
+            proceso recibir();//pone finpartida a 0 o 1
+            pintar(part);
+            //realiza comprobacion de fin de partida
+            turno=1;
+            ronda++;
         }
-        turno++;
+        
     }*/
+    //realiza comprobacion de fin de partida
+    //if 0 los dos pierden
+    //else?
+    //recibir q para salir y cerrar conexion
     int n;
     cin>>n;
     return 0;
