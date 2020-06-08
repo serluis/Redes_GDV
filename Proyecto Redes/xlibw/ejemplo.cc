@@ -45,7 +45,7 @@ void pintar(std::vector<vector<int>> part){
     dpy.rectangle(10,10,380,440);
     dpy.set_color(XLDisplay::RED);
     dpy.rectangle(12,12,376,436);
-    dpy.text(150, 25, "MasterMind");
+    //dpy.text(150, 25, "MasterMind");
     /*dpy.set_color(XLDisplay::SIENNA);
     for(int i=0;i<12;i++){
         for(int j=0;j<4;j++){
@@ -105,7 +105,13 @@ void pintar(std::vector<vector<int>> part){
             default:
                 break;
             }
-        dpy.circle(45*(j+1),35*(i+1),10);
+
+        if(j<4){
+            dpy.circle(45*(j+1),35*(i+1),10);
+        }
+        else{
+            dpy.circle(150 + (j+1)*20,35*(i+1),5);
+        }
 		}
 	}
     dpy.flush();
@@ -264,7 +270,7 @@ int main(int argc, char** argv)
 	for (int i = 0; i < part.size(); i++) {
 		part[i].resize(C);
 		for (int j = 0; j < part.at(i).size(); j++) {
-			part.at(i).at(j) = 1;
+			part.at(i).at(j) = 11;
 		}
 	}
     //v.at(i)[0] //acceso
