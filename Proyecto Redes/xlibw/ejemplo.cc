@@ -117,14 +117,13 @@ void pintar(std::vector<vector<int>> part){
     dpy.flush();
 }
 
-int * redondeles(int turno)
+int * redondeles(int ronda)
 {
     bool acabado = false;
-    tablero();
     XLDisplay& dpy = XLDisplay::display();
     dpy.set_color(XLDisplay::RED);
     for(int i=0;i<4;i++){
-        dpy.circle(45*(i+1),35*(turno+1),10);
+        dpy.circle(45*(i+1),35*(ronda+1),10);
     }
     int comb [4] = {0,0,0,0};
     int pos = 0;
@@ -165,8 +164,7 @@ int * redondeles(int turno)
                     }
                     break;
             case 'l':
-                    //acabado = true;
-                    turno++;
+                    acabado = true;
                     break;
             default:
                 break;
@@ -216,7 +214,7 @@ int * redondeles(int turno)
             default:
                 break;
         }
-        dpy.circle(45*(pos+1),35*(turno+1),10);
+        dpy.circle(45*(pos+1),35*(ronda+1),10);
     }
     return comb;
 }
@@ -242,9 +240,11 @@ int main(int argc, char** argv)
 {
     // fin=1 end, turno=1 tu turno
     int finPartida = 0, turno = 0, ronda = 0;
-    //crear un vector de arrays con la partida completa para pintar
+    // combinacion a enviar
+    int comb [4] = {0,0,0,0};
+    //crear un vector de vectores con la partida completa para pintar
     std::vector<vector<int>> part(R);
-	
+	//12*8
 	for (int i = 0; i < part.size(); i++) {
 		part[i].resize(C);
 		for (int j = 0; j < part.at(i).size(); j++) {
@@ -268,12 +268,13 @@ int main(int argc, char** argv)
     //pone ese uno o cero en la variable turno
     
     /*while(ronda < 12 && finPartida == 0){
-       
+        
         if(turno == 1){
-            proceso enviar();
             //incluye pintado especial
             //devuelve la contraseña del cliente
-            proceso recibir();//pone finpartida a 0 o 1
+            comb = redondeles(ronda);
+            //enviar combinacion
+            proceso recibir(part);//pone finpartida a 0 o 1
             pintar(part);
             if(finpartida==1){
                 proceso ganar();
@@ -284,21 +285,34 @@ int main(int argc, char** argv)
             }
             ronda++;        
         }
-        else{
-            
+        else{            
             //recibe la jugada del oponente
-            proceso recibir();//pone finpartida a 0 o 1
+            proceso recibir(part);//pone finpartida a 0 o 1
             pintar(part);
             //realiza comprobacion de fin de partida
-            turno=1;
+            if(finpartida==1){
+                proceso perder();
+                //salir bucle
+            }
+            else{
+                turno=1;
+            }
             ronda++;
         }
-        
     }*/
-    //realiza comprobacion de fin de partida
-    //if 0 los dos pierden
-    //else?
-    //recibir q para salir y cerrar conexion
+    /*realiza comprobacion de fin de partida
+    if(finpartida==0){
+        proceso perder();
+    }
+    else {
+        if(turno == 1){
+            proceso ganar();
+        }
+        else{
+            proceso perder();
+        }
+    }
+    //escribir q para salir y cerrar conexion*/
     int n;
     cin>>n;
     return 0;
