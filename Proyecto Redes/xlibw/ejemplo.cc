@@ -6,38 +6,11 @@
 #include <string.h>
 #include <iostream>
 #include <fstream>
+#include <time.h>
 #define R 12 //rondas 8
 #define C 8  //combinacion
 using namespace std;
-//Pintara el tablero y las sombras de las chinchetas
-void tablero()//tablero
-{
-    //otras formas y lineas
-    /*dpy.point(50,50);
-    dpy.line(20,20,100,50);
-    dpy.circle(45,45,15);
-    dpy.rectangle(60,60,30,15);
-    XPoint pts[] = {{100,100},{130,130},{100,130},{100,100}};
-    dpy.text(150, 25, "MasterMind");
-    dpy.lines(pts, 4);*/
 
-    XLDisplay& dpy = XLDisplay::display();
-    dpy.set_color(XLDisplay::PERU);
-    dpy.rectangleFill(10,10,380,440);
-    dpy.set_color(XLDisplay::GREEN);
-    dpy.rectangle(10,10,380,440);
-    dpy.set_color(XLDisplay::RED);
-    dpy.rectangle(12,12,376,436);
-    dpy.set_color(XLDisplay::SIENNA);
-    for(int i=0;i<12;i++){
-        for(int j=0;j<4;j++){
-            dpy.circle(45*(j+1),35*(i+1),10);
-            dpy.circle(((j+1)*20)+150 ,35*(i+1),5);
-        }
-    }
-    dpy.flush();
-    //dpy.clear();
-}
 //sera llamado para actualizar la partida en cada paso
 void pintar(std::vector<vector<int>> part){
     
@@ -246,6 +219,17 @@ void wait()
 
 int main(int argc, char** argv)
 {
+    // random
+    std::vector<int> cont;
+	srand(time(NULL));
+    for(int i=0;i<4;i++){
+	int randomint = rand()%9;
+    cont.push_back(randomint);
+    }
+    for(int p=0;p<4;p++){
+        cout<<cont[p]<<" ";
+    }
+	
     // fin=1 end, turno=1 tu turno
     int finpartida = 0, turno = 1, ronda = 0;
     // combinacion a enviar
