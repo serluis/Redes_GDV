@@ -217,6 +217,64 @@ void wait()
     sleep(1);
 }
 
+/*cont = jugador*//*comb = server*/
+std::vector<int> solucion(const std::vector<int> cont, const std::vector<int> comb){
+    //se inicializa el vector a devolver
+    //por defecto en no fin
+    std::vector<int> sol={0, 11,11,11,11, 11,11,11,11};
+    //mete la prueba del jugador a la respuesta
+    for(int i=0;i<4;i++){
+        sol.at(i+1)=cont.at(i);
+    }
+    //debug
+    cout<<"contraseña metodo: ";
+    for(int p=0;p<4;p++){
+        cout<<comb.at(p)<<" ";
+    }
+    cout<<endl;
+    // en mala posicion
+    if(cont.at(0) == comb.at(1) || cont.at(0) == comb.at(2) 
+    || cont.at(0) == comb.at(3)){
+        sol[5]=9;
+    }
+    if(cont.at(1) == comb.at(0) || cont.at(1) == comb.at(2) 
+    || cont.at(1) == comb.at(3)){
+        sol[6]=9;
+    }
+    if(cont.at(2) == comb.at(0) || cont.at(2) == comb.at(1) 
+    || cont.at(2) == comb.at(3)){
+        sol[7]=9;
+    }
+    if(cont.at(3) == comb.at(0) || cont.at(3) == comb.at(1) 
+    || cont.at(3) == comb.at(2)){
+        sol[8]=9;
+    }
+    //correctos
+    if(cont.at(0) == comb.at(0)){
+        //debug
+        cout<<"revision"<<cont.at(0)<<" "<<comb.at(0)<<endl;
+        //fin debug
+        sol[5]=8;
+    }
+    if(cont.at(1) == comb.at(1)){
+        sol[6]=8;
+    }
+    if(cont.at(2) == comb.at(2)){
+        sol[7]=8;
+    }
+    if(cont.at(3) == comb.at(3)){
+        sol[8]=8;
+    }
+    //fin de partida correcta
+    if(cont.at(0) == comb.at(0) && cont.at(1) == comb.at(1) 
+        && cont.at(2) == comb.at(2) && cont.at(3) == comb.at(3))
+	{
+        sol[0]=1;
+    }
+
+    return sol;
+}
+
 int main(int argc, char** argv)
 {
     // random
@@ -226,10 +284,14 @@ int main(int argc, char** argv)
 	int randomint = rand()%9;
     cont.push_back(randomint);
     }
+    //debug
+    cout<<"contraseña: ";
     for(int p=0;p<4;p++){
         cout<<cont[p]<<" ";
     }
-	
+    cout<<endl;
+	//fin debug
+
     // fin=1 end, turno=1 tu turno
     int finpartida = 0, turno = 1, ronda = 0;
     // combinacion a enviar
@@ -269,13 +331,31 @@ int main(int argc, char** argv)
             //incluye pintado especial
             //devuelve la contraseña del cliente
             comb = redondeles(ronda);
-            for(int k=0;k<4;k++){
+            /*for(int k=0;k<4;k++){
                 part[ronda].at(k)=comb[k];
-            }
+            }*/
             //enviar combinacion
-            //proceso recibir(part);//pone finpartida a 0 o 1
+            //proceso recibir(part);
+            std::vector<int> linea = solucion(comb,cont);
+            //debug
+            cout<<"linea msg: ";
+            for(int t=0;t<linea.size();t++){
+            cout<<linea[t]<<" ";
+            }
+            cout<<endl;
+            //fin debug
+            cout<<"ronda: ";
+            for(int h=0;h<8;h++){
+            part[ronda].at(h)=linea[h+1];
+            cout<<part[ronda].at(h);
+            }
+            cout<<endl;
             dpy.clear();
             pintar(part);
+            //pone finpartida a 0 o 1
+            if(linea[0]==1){
+                finpartida=1;
+            }
             if(finpartida==1){
                 //proceso ganar();
                 //salir bucle
