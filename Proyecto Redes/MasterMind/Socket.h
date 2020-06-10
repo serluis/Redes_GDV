@@ -15,6 +15,8 @@
 
 #include <ostream>
 
+#include <vector>
+
 // Archivos
 // Includes del programa
 #include <sys/stat.h>
@@ -29,30 +31,25 @@
 // ----------------------------------------------------------------------------- //
 class Socket;
 class Serializable;
-/**
- *  Esta función compara dos Socks, realizando la comparación de las structuras
- *  sockaddr: familia (INET), dirección y puerto, ver ip(7) para comparar
- *  estructuras sockaddr_in. Deben comparar el tipo (sin_family), dirección
- *  (sin_addr.s_addr) y puerto (sin_port). La comparación de los campos puede
- *  realizarse con el operador == de los tipos básicos asociados.
- */
+// Esta función compara dos Socks, realizando la comparación de las structuras
+// sockaddr: familia (INET), dirección y puerto, ver ip(7) para comparar
+// estructuras sockaddr_in. Deben comparar el tipo (sin_family), dirección
+// (sin_addr.s_addr) y puerto (sin_port). La comparación de los campos puede
+// realizarse con el operador == de los tipos básicos asociados.
 bool operator== (const Socket &s1, const Socket &s2);
 // Imprime la dirección y puerto en número con el formato:"dirección_ip:puerto"
 std::ostream& operator<<(std::ostream& os, const Socket& dt);
 // -----------------------------------------------------------------------------
-// -----------------------------------------------------------------------------
 
-/**
- * Clase base que representa el extremo local de una conexión UDP. Tiene la lógica
- * para inicializar un sockect y la descripción binaria del extremo
- *   - dirección IP
- *   - puerto
- */
+// -----------------------------------------------------------------------------
+// Clase base que representa el extremo local de una conexión UDP. Tiene la lógica
+// para inicializar un sockect y la descripción binaria del extremo
+//  - dirección IP
+//  - puerto
 class Socket {
 protected:
     // Descriptor del socket
     int sd;
-
     // Representación binaria del extremo, usada por servidor y cliente
     struct sockaddr sa;
     socklen_t       sa_len;
@@ -96,13 +93,13 @@ public:
     int bind();
 
     // Aceptar la conexion entrante
-    int accept();
+    Socket* accept();
 
     // Conecta el cliente
     int connect();
 
     // ---------------------------------------------------------------------- //
-    // -- OPERADORES -------------------------------------------------------- //
+    // --- OPERADORES ------------------------------------------------------- //
     // ---------------------------------------------------------------------- //
     
     friend std::ostream& operator<<(std::ostream& os, const Socket& dt);

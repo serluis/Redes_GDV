@@ -5,8 +5,6 @@
 #include "Game.h"
 // Threads
 #include <thread>
-// Estructuras
-#include <vector>
 
 class MMServer {
 private:

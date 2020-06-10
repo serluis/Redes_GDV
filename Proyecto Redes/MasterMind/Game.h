@@ -3,8 +3,6 @@
 // Serilaizacion
 #include "Serializable.h"
 #include "Socket.h"
-// Dependencias de C
-#include <unistd.h>
 
 // ------------------------------------------------------------------------------ //
 // --- Servidor ----------------------------------------------------------------- //
@@ -12,14 +10,18 @@
 
 class GameServer {
 private:
+    // Servidor
+    Socket server;
     // Jugadores
-    int P1, P2;
+    Socket *P1, *P2;
     // Booleano de fin del juego
     bool end;
+    // Contraseña
+    int pass[4] = {};
 public:
     // Constructora y destructora
-    GameServer(int player_ONE, int player_TWO) 
-     : P1(player_ONE), P2(player_TWO), end(false) {
+    GameServer(Socket sock, Socket* player_ONE, Socket* player_TWO) 
+     : server(sock), P1(player_ONE), P2(player_TWO), end(false) {
         init();
     };
     ~GameServer() {};
@@ -79,8 +81,8 @@ public:
     
     // Constructora y destructora
     Message() {};
-    Message(int gue[4], int rep[4], int end)
-     : guess(gue), reply(rep), endGame(end) {};
+    Message(int end, int gue[4] = {}, int rep[4] = {})
+     : endGame(end), guess(gue), reply(rep) {};
     ~Message() {};
 
     // Serializar: Serializar los campos type, nick y message en el buffer _data

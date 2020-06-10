@@ -1,7 +1,26 @@
 #include <Game.h>
 
-void GameServer::init() { }
-void GameServer::update() {}
+void GameServer::init() {
+    // Crear la contrasena que deberan adivinar
+    for (int i = 0; i < sizeof(pass); ++i) {
+        pass[i] = rand() % 10;
+    }
+
+    // Debug de la contrasena
+    std::cout << "Password: { " << pass[0] << ", " << pass[1] << ", " << pass[2] << ", " << pass[3] << " };" << std::endl;
+
+    // Mandar a cada cliente quien es el primero y quien es el segundo
+    Message* msgP1 = new Message(0);
+    server.send(*msgP1, *P1);
+
+    Message* msgP2 = new Message(1);
+    server.send(*msgP1, *P2);
+}
+
+void GameServer::update() {
+    std::cout << "UPDATE!" << std::endl;
+    end = true;
+}
 
 void GameClient::init() {
     XLDisplay::init(width, heigth, "MasterMind");

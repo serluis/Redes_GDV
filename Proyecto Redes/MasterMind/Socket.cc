@@ -57,23 +57,15 @@ int Socket::bind() {
     return bind;
 }
 
-int Socket::accept() {
+Socket* Socket::accept() {
     // Aceptar cualquier conexion entrante
     int accept = ::accept(sd, &sa, &sa_len);
     if (accept == -1) {
         std::cerr << "sdclient: " << std::endl;
-        return -1;
+        return nullptr;
     }
-
-    // Mensaje para saber de donde es la conexion
-    char host[NI_MAXHOST];
-    char service[NI_MAXSERV];
-    // Coger la informacion
-    getnameinfo(&sa, sa_len, host, NI_MAXHOST, service, NI_MAXSERV, NI_NUMERICHOST | NI_NUMERICSERV);
-    // Mensade del servidor
-    std::cout << "Conexion desde " << host << " " << service << std::endl;
-    
-    return accept;
+    // Si la conexion no ha fallado, devolver el socket
+    return new Socket(&sa, sa_len);
 }
 
 int Socket::connect() {
