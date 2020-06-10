@@ -42,3 +42,25 @@ void GameClient::drawBoard(XLDisplay& dpy) {
     
     dpy.flush();
 }
+
+void Message::to_bin() {
+    alloc_data(MESSAGE_SIZE);
+    memset(_data, 0, MESSAGE_SIZE);
+    char *tmp = _data;
+    memcpy(tmp, guess, sizeof(guess));
+    tmp += 4 * sizeof(int);
+    memcpy(tmp, reply, sizeof(reply));
+    tmp += 4 * sizeof(int);
+    memcpy(tmp, &endGame, sizeof(int));
+}
+
+int Message::from_bin(char * bobj) {
+    alloc_data(MESSAGE_SIZE);
+    char* tmp = bobj;
+    memcpy(guess, tmp, sizeof(guess));
+    tmp += 4 * sizeof(char);
+    memcpy(reply, tmp, 4 * sizeof(int));
+    tmp += 4 * sizeof(char);
+    memcpy(&endGame, tmp, sizeof(int));
+    return 0;
+}

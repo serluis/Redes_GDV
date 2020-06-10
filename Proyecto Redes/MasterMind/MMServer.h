@@ -10,13 +10,12 @@
 
 class MMServer {
 private:
-    // 2 clientes
-    //Socket* client_one, client_two;
     // Socket del servidor
     Socket socket;
 public:
     // Constructora y destructora
-    MMServer(const char *ip, const char *port) : socket(ip, port) {
+    MMServer(const char *ip, const char *port) 
+     : socket(ip, port) {
         socket.bind();
     };
     ~MMServer() {};

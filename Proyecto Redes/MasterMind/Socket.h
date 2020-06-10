@@ -1,6 +1,11 @@
 #ifndef SOCKET_H_
 #define SOCKET_H_
 
+// Dependencias de clases
+#include "Serializable.h"
+// Dependencias de C
+#include <string.h>
+
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netdb.h>
@@ -9,6 +14,15 @@
 #include <stdexcept>
 
 #include <ostream>
+
+// Archivos
+// Includes del programa
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+// Includes de archivos
+#include <fstream>
+#include <string>
 
 // ----------------------------------------------------------------------------- //
 // --- Definiciones adelantadas ------------------------------------------------ //
@@ -83,6 +97,9 @@ public:
 
     // Aceptar la conexion entrante
     int accept();
+
+    // Conecta el cliente
+    int connect();
 
     // ---------------------------------------------------------------------- //
     // -- OPERADORES -------------------------------------------------------- //

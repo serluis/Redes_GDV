@@ -1,17 +1,4 @@
-// Dependencias de clases
-#include "Serializable.h"
 #include "Socket.h"
-// Dependencias de C
-#include <string.h>
-
-// Archivos
-// Includes del programa
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-// Includes de archivos
-#include <fstream>
-#include <string>
 
 Socket::Socket(const char * address, const char * port) : sd(-1) {
     // res contiene la representación como sockaddr de dirección + puerto
@@ -87,6 +74,15 @@ int Socket::accept() {
     std::cout << "Conexion desde " << host << " " << service << std::endl;
     
     return accept;
+}
+
+int Socket::connect() {
+    int connect = ::connect(sd, &sa, sa_len);
+    if (connect == -1) {
+        std::cerr << "coonect: " << std::endl;
+        return -1;
+    }
+    return connect;
 }
 
 int Socket::recv(Serializable &obj, Socket * &sock) {
