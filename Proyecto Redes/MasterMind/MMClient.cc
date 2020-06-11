@@ -6,7 +6,14 @@ int main(int argc, char** argv) {
     // Lo conecta al servidor
     client.getSocket().connect();
 
-    // 
+    // Crear el juego para el cliente
+    GameClient MasterMind(client.getSocket(), 400, 450);
+
+    while(!MasterMind.getEnd()) {
+        MasterMind.handleInput();
+        MasterMind.update();
+        MasterMind.render();
+    }
     
     return 0;
 }

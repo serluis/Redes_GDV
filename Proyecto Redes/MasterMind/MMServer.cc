@@ -3,7 +3,8 @@
 int main(int argc, char** argv) {
     // Crear el servidor
     MMServer server(argv[1], argv[2]);
-
+    std::cout << "== Servidor alojado en: " << server.getSocket() << " ==" << std::endl;
+    
     // ---------------------------------------------------------------------- //
     // --- POOL DE THREADS -------------------------------------------------- //
     // ---------------------------------------------------------------------- //
@@ -16,18 +17,18 @@ int main(int argc, char** argv) {
     // ---------------------------------------------------------------------- //
     
     // Aceptar cliente 1
-    Socket* sd_client_one = server.getSocket().accept();
-    std::cout << "== Cliente 1 conectado. SD: " << *sd_client_one << " ==" << std::endl;
+    Socket* sock_client_one = server.getSocket().accept();
+    std::cout << "== Cliente 1 conectado desde: " << *sock_client_one << " ==" << std::endl;
     // Aceptar cliente 2
-    Socket* sd_client_two = server.getSocket().accept();
-    std::cout << "== Cliente 2 conectado. SD: " << *sd_client_two << " ==" << std::endl;
+    Socket* sock_client_two = server.getSocket().accept();
+    std::cout << "== Cliente 2 conectado desde: " << *sock_client_two << " ==" << std::endl;
 
     // Si los clientes no han dado errores, crear el hilo del juego
-    if (sd_client_one != nullptr && sd_client_two != nullptr) {
+    if (sock_client_one != nullptr && sock_client_two != nullptr) {
         // Hilo con el bucle principal del juego
         pool.push_back(std::thread([&]() {
             // Creamos el servidor que maneja la logica
-            GameServer MasterMind(server.getSocket(), sd_client_one, sd_client_two);
+            GameServer MasterMind(server.getSocket(), sock_client_one, sock_client_two);
             // Ejecutamos comprobamos si el juego continua
             while(!MasterMind.getEnd())
                 MasterMind.update();

@@ -42,14 +42,18 @@ public:
 
 class GameClient {
 private:
+    // Servidor
+    Socket server;
     // Alto y ancho de la pestaña
     int width, heigth;
     // Booleano de fin del juego
     bool end;
+    // Quien es el primero en jugar
+    bool playFirst;
 public:
     // Constructora y destructora
-    GameClient(int w, int h) 
-     : width(w), heigth(h), end(false) {
+    GameClient(Socket sock, int w, int h) 
+     : server(sock), width(w), heigth(h), end(false) {
         init();
     };
     ~GameClient() {};
@@ -61,6 +65,7 @@ public:
     // Metodos tradicionales del juego
     void handleInput();
     void render();
+    void update();
 
     // Getters y Setters
     bool getEnd() { return end; };
@@ -72,8 +77,8 @@ public:
 
 class Message : public Serializable {
 private:
-    int* guess;
-    int* reply;
+    std::vector<int> guess;
+    std::vector<int> reply;
     int endGame;
 public:
     // Tamaño del mensaje
@@ -81,7 +86,7 @@ public:
     
     // Constructora y destructora
     Message() {};
-    Message(int end, int gue[4] = {}, int rep[4] = {})
+    Message(const int& end, std::vector<int>& gue, std::vector<int> rep)
      : endGame(end), guess(gue), reply(rep) {};
     ~Message() {};
 
@@ -89,4 +94,9 @@ public:
     void to_bin();
     // Deserializar: Reconstruir la clase usando el buffer _data
     int from_bin(char * bobj);
+
+    // Getters y setters
+    std::vector<int> getGuess() { return guess; };
+    std::vector<int> getReply() { return reply; };
+    int getEndGame() { return endGame; };
 };

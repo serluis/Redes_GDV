@@ -84,13 +84,15 @@ int Socket::recv(Serializable &obj, Socket * &sock) {
     // Coger la informacion
     char buffer[90];
 
-    ssize_t bytes = ::recvfrom(sd, buffer, sizeof(buffer), 0, &sa, &sa_len);
+    std::cout << "Recibiendo de la sd: " << sd << std::endl;
+    ssize_t bytes = ::recv(sd, (void*) buffer, sizeof(buffer), 0);
     if (bytes <= 0) {
-        std::cerr << "bytes: " << std::endl;
+        std::cerr << "bytes: " << bytes << std::endl;
         return -1;
     }
     
     sock = new Socket(&sa, sa_len);
+    std::cout << sock << std::endl;
 
     obj.from_bin(buffer);
 
@@ -112,7 +114,8 @@ int Socket::send(Serializable& obj, const Socket& sock) {
     // Cerrar el archivo al escribir
     close(id);
     // Enviar el objeto binario a sock usando el socket sd
-    int err = sendto(sd, obj.data(), obj.size(), 0, &sock.sa, sock.sa_len);
+    std::cout << "Enviando a la sd: " << sd << std::endl;
+    int err = ::send(sd, obj.data(), obj.size(), 0);
     if (err == -1) {
         std::cerr << "err sendto: " << std::endl;
         return -1;
@@ -144,7 +147,7 @@ std::ostream& operator<<(std::ostream& os, const Socket& s) {
         return os;
     }
 
-    os << host << ":" << serv;
+    os << host << ":" << serv << ", sd: " << s.sd;
 
     return os;
 };

@@ -1,19 +1,25 @@
 #include <Game.h>
 
+// ---------------------------------------------------------------------- //
+// --- SERVER ----------------------------------------------------------- //
+// ---------------------------------------------------------------------- //
+
 void GameServer::init() {
     // Crear la contrasena que deberan adivinar
+    srand(time(NULL));
     for (int i = 0; i < sizeof(pass); ++i) {
         pass[i] = rand() % 10;
     }
 
     // Debug de la contrasena
-    std::cout << "Password: { " << pass[0] << ", " << pass[1] << ", " << pass[2] << ", " << pass[3] << " };" << std::endl;
+    std::cout << "\n> Password: { " << pass[0] << ", " << pass[1] << ", " << pass[2] << ", " << pass[3] << " };\n" << std::endl;
 
     // Mandar a cada cliente quien es el primero y quien es el segundo
-    Message* msgP1 = new Message(0);
+    std::vector<int> test = {11, 11, 11, 11};
+    Message* msgP1 = new Message(0, test, test);
     server.send(*msgP1, *P1);
 
-    Message* msgP2 = new Message(1);
+    Message* msgP2 = new Message(1, test, test);
     server.send(*msgP1, *P2);
 }
 
@@ -22,64 +28,66 @@ void GameServer::update() {
     end = true;
 }
 
+// ---------------------------------------------------------------------- //
+// --- CLIENT ----------------------------------------------------------- //
+// ---------------------------------------------------------------------- //
+
 void GameClient::init() {
-    XLDisplay::init(width, heigth, "MasterMind");
+    // Recibir si eres el player one o el player two
+    Socket* sock;
+    Message* msgTurn = new Message();
+    server.recv(*msgTurn, sock);
+
+    std::vector<int>guess = msgTurn->getGuess();
+    std::vector<int>reply = msgTurn->getReply();
+
+    std::cout << "Juegas primero: " << msgTurn->getEndGame() 
+        /*<< ", Guess: " << guess[0] << guess[1] << guess[2] << guess[3]
+        << ", Reply : " << reply[0] << reply[1] << reply[2] << reply[3] */<< std::endl;
+    
+    playFirst = !msgTurn->getEndGame();
+}
+
+void GameClient::handleInput() {
+    std::cout << "HANDLE INPUT" << std::endl;
+}
+
+void GameClient::update() {
+    std::cout << "UPDATE" << std::endl;
+    end = true;
 }
 
 void GameClient::render() {
-    XLDisplay& dpy = XLDisplay::display();
-    // Dibuja el tablero
-    drawBoard(dpy);
+    std::cout << "RENDER" << std::endl;
 }
 
 void GameClient::drawBoard(XLDisplay& dpy) {
-    // Color del fondo del tablero
-    dpy.set_color(XLDisplay::PERU);
-    dpy.rectangleFill(10, 10, 380, 440);
-    
-    // Color del borde interior del tablero
-    dpy.set_color(XLDisplay::GREEN);
-    dpy.rectangle(10, 10, 380, 440);
 
-    // Color del borde exterior del tablero
-    dpy.set_color(XLDisplay::RED);
-    dpy.rectangle(12, 12, 376, 436);
-
-
-    // Texto que pone MasterMind en el tablero
-    dpy.set_color(XLDisplay::SIENNA);
-    dpy.text(150, 25, "MasterMind");
-
-    // dibujar los circulos
-    dpy.set_color(XLDisplay::SIENNA);
-    for(int i = 0; i < 12; ++i) {
-        for(int j = 0; j < 4; ++j) {
-            dpy.circle(45 * (j + 1), 35 * (i + 1), 10);
-            dpy.circle(200 + (j + 1) * 20, 35 * (i + 1), 5);
-        }
-    }
-    
-    dpy.flush();
 }
+
+// ---------------------------------------------------------------------- //
+// --- MESSAGE ---------------------------------------------------------- //
+// ---------------------------------------------------------------------- //
 
 void Message::to_bin() {
     alloc_data(MESSAGE_SIZE);
     memset(_data, 0, MESSAGE_SIZE);
     char *tmp = _data;
-    memcpy(tmp, guess, sizeof(guess));
-    tmp += 4 * sizeof(int);
-    memcpy(tmp, reply, sizeof(reply));
-    tmp += 4 * sizeof(int);
     memcpy(tmp, &endGame, sizeof(int));
+    tmp += sizeof(int);
+    memcpy(tmp, &guess, sizeof(guess));
+    tmp += 4 * sizeof(int);
+    memcpy(tmp, &reply, sizeof(reply));
 }
 
 int Message::from_bin(char * bobj) {
     alloc_data(MESSAGE_SIZE);
     char* tmp = bobj;
-    memcpy(guess, tmp, sizeof(guess));
-    tmp += 4 * sizeof(char);
-    memcpy(reply, tmp, 4 * sizeof(int));
-    tmp += 4 * sizeof(char);
     memcpy(&endGame, tmp, sizeof(int));
+    tmp += sizeof(int);
+    memcpy(&guess, tmp, sizeof(guess));
+    tmp += 4 * sizeof(int);
+    memcpy(&reply, tmp, 4 * sizeof(reply));
+
     return 0;
 }
