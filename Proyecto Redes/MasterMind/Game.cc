@@ -15,12 +15,8 @@ void GameServer::init() {
     std::cout << "\n> Password: { " << pass[0] << ", " << pass[1] << ", " << pass[2] << ", " << pass[3] << " };\n" << std::endl;
 
     // Mandar a cada cliente quien es el primero y quien es el segundo
-    int test[] = {11, 11, 11, 11};
-    Message* msgP1 = new Message(0, test, test);
+    Message* msgP1 = new Message(0, 1, 2, 3, 4, 8, 9, 10, 11);
     P1->send(*msgP1);
-
-    Message* msgP2 = new Message(1, test, test);
-    P2->send(*msgP2);
 }
 
 void GameServer::update() {
@@ -38,12 +34,7 @@ void GameClient::init() {
     Message* msgTurn = new Message();
     server.recv(*msgTurn, sock);
 
-    int* guess = msgTurn->getGuess();
-    int* reply = msgTurn->getReply();
-
-    std::cout << "Juegas primero: " << msgTurn->getEndGame() 
-        /*<< ", Guess: " << guess[0] << guess[1] << guess[2] << guess[3]
-        << ", Reply : " << reply[0] << reply[1] << reply[2] << reply[3] */<< std::endl;
+    std::cout << "Juegas primero: " << msgTurn->getEndGame() << std::endl;
     
     playFirst = !msgTurn->getEndGame();
 }
@@ -75,9 +66,21 @@ void Message::to_bin() {
     char *tmp = _data;
     memcpy(tmp, &endGame, sizeof(int));
     tmp += sizeof(int);
-    memcpy(tmp, &guess, sizeof(guess));
-    tmp += 4 * sizeof(int);
-    memcpy(tmp, &reply, sizeof(reply));
+    memcpy(tmp, &guess1, sizeof(int));
+    tmp += sizeof(int);
+    memcpy(tmp, &guess2, sizeof(int));
+    tmp += sizeof(int);
+    memcpy(tmp, &guess3, sizeof(int));
+    tmp += sizeof(int);
+    memcpy(tmp, &guess4, sizeof(int));
+    tmp += sizeof(int);
+    memcpy(tmp, &reply1, sizeof(int));
+    tmp += sizeof(int);
+    memcpy(tmp, &reply2, sizeof(int));
+    tmp += sizeof(int);
+    memcpy(tmp, &reply3, sizeof(int));
+    tmp += sizeof(int);
+    memcpy(tmp, &reply4, sizeof(int));
 }
 
 int Message::from_bin(char * bobj) {
@@ -85,9 +88,21 @@ int Message::from_bin(char * bobj) {
     char* tmp = bobj;
     memcpy(&endGame, tmp, sizeof(int));
     tmp += sizeof(int);
-    memcpy(&guess, tmp, sizeof(guess));
-    tmp += 4 * sizeof(int);
-    memcpy(&reply, tmp, 4 * sizeof(reply));
+    memcpy(&guess1, tmp, sizeof(int));
+    tmp += sizeof(int);
+    memcpy(&guess2, tmp, sizeof(int));
+    tmp += sizeof(int);
+    memcpy(&guess3, tmp, sizeof(int));
+    tmp += sizeof(int);
+    memcpy(&guess4, tmp, sizeof(int));
+    tmp += sizeof(int);
+    memcpy(&reply1, tmp, sizeof(int));
+    tmp += sizeof(int);
+    memcpy(&reply2, tmp, sizeof(int));
+    tmp += sizeof(int);
+    memcpy(&reply3, tmp, sizeof(int));
+    tmp += sizeof(int);
+    memcpy(&reply4, tmp, sizeof(int));
 
     return 0;
 }

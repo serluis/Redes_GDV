@@ -77,17 +77,19 @@ public:
 
 class Message : public Serializable {
 private:
-    int* guess;
-    int* reply;
     int endGame;
+    int guess1, guess2, guess3, guess4;
+    int reply1, reply2, reply3, reply4;
 public:
     // Tamaño del mensaje
-    static const size_t MESSAGE_SIZE = sizeof(int) * 9;
+    static const size_t MESSAGE_SIZE = 9 * sizeof(int);
     
     // Constructora y destructora
     Message() {};
-    Message(const int& end, int* gue = {}, int* rep = {})
-     : endGame(end), guess(gue), reply(rep) {};
+    Message(const int& end, const int& g1 = 11, const int& g2 = 11, const int& g3 = 11, const int& g4 = 11, 
+    const int& r1 = 11, const int& r2 = 11, const int& r3 = 11, const int& r4 = 11)
+     : endGame(end), guess1(g1), guess2(g2), guess3(g3), guess4(g4),
+        reply1(r1), reply2(r2), reply3(r3), reply4(r4) {};
     ~Message() {};
 
     // Serializar: Serializar los campos type, nick y message en el buffer _data
@@ -96,7 +98,7 @@ public:
     int from_bin(char * bobj);
 
     // Getters y setters
-    int* getGuess() { return guess; };
-    int* getReply() { return reply; };
+    //int* getGuess() { int i[] = { guess1, guess2, guess3, guess4 }; return i; };
+    //int* getReply() { int i[] = { reply1, reply2, reply3, reply4 }; return i; };
     int getEndGame() { return endGame; };
 };
