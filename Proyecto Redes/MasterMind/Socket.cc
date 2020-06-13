@@ -90,9 +90,6 @@ int Socket::recv(Serializable &obj, Socket * &sock) {
         std::cerr << "bytes: " << bytes << std::endl;
         return -1;
     }
-    
-    sock = new Socket(&sa, sa_len);
-    std::cout << sock << std::endl;
 
     obj.from_bin(buffer);
 
