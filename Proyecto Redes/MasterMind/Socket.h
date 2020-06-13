@@ -68,6 +68,7 @@ public:
     
     // Inicializa un Socket copiando los parámetros del socket
     Socket(struct sockaddr * _sa, socklen_t _sa_len):sd(-1), sa(*_sa), sa_len(_sa_len){};
+    Socket(struct sockaddr * _sa, socklen_t _sa_len, int sd):sd(sd), sa(*_sa), sa_len(_sa_len){};
     virtual ~Socket(){};
 
     //  Recibe un mensaje de aplicación
@@ -87,7 +88,7 @@ public:
     // @param obj en el que se enviará por la red. La función lo serializará
     // @param sock con la dirección y puerto destino
     // @return 0 en caso de éxito o -1 si error
-    int send(Serializable& obj, const Socket& sock);
+    int send(Serializable& obj);
     
     // Enlaza el descriptor del socket a la dirección y puerto
     int bind();

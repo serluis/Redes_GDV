@@ -15,12 +15,12 @@ void GameServer::init() {
     std::cout << "\n> Password: { " << pass[0] << ", " << pass[1] << ", " << pass[2] << ", " << pass[3] << " };\n" << std::endl;
 
     // Mandar a cada cliente quien es el primero y quien es el segundo
-    std::vector<int> test = {11, 11, 11, 11};
+    int test[] = {11, 11, 11, 11};
     Message* msgP1 = new Message(0, test, test);
-    server.send(*msgP1, *P1);
+    P1->send(*msgP1);
 
     Message* msgP2 = new Message(1, test, test);
-    server.send(*msgP1, *P2);
+    P2->send(*msgP2);
 }
 
 void GameServer::update() {
@@ -38,8 +38,8 @@ void GameClient::init() {
     Message* msgTurn = new Message();
     server.recv(*msgTurn, sock);
 
-    std::vector<int>guess = msgTurn->getGuess();
-    std::vector<int>reply = msgTurn->getReply();
+    int* guess = msgTurn->getGuess();
+    int* reply = msgTurn->getReply();
 
     std::cout << "Juegas primero: " << msgTurn->getEndGame() 
         /*<< ", Guess: " << guess[0] << guess[1] << guess[2] << guess[3]

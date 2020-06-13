@@ -65,7 +65,7 @@ Socket* Socket::accept() {
         return nullptr;
     }
     // Si la conexion no ha fallado, devolver el socket
-    return new Socket(&sa, sa_len);
+    return new Socket(&sa, sa_len, accept);
 }
 
 int Socket::connect() {
@@ -99,7 +99,7 @@ int Socket::recv(Serializable &obj, Socket * &sock) {
     return 0;
 }
 
-int Socket::send(Serializable& obj, const Socket& sock) {
+int Socket::send(Serializable& obj) {
     // Serializar el objeto
     obj.to_bin();
     // DEBUG CON FICHERO PARA SABER QUE CONTIENE DATA

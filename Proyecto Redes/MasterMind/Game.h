@@ -77,8 +77,8 @@ public:
 
 class Message : public Serializable {
 private:
-    std::vector<int> guess;
-    std::vector<int> reply;
+    int* guess;
+    int* reply;
     int endGame;
 public:
     // Tamaño del mensaje
@@ -86,7 +86,7 @@ public:
     
     // Constructora y destructora
     Message() {};
-    Message(const int& end, std::vector<int>& gue, std::vector<int> rep)
+    Message(const int& end, int* gue = {}, int* rep = {})
      : endGame(end), guess(gue), reply(rep) {};
     ~Message() {};
 
@@ -96,7 +96,7 @@ public:
     int from_bin(char * bobj);
 
     // Getters y setters
-    std::vector<int> getGuess() { return guess; };
-    std::vector<int> getReply() { return reply; };
+    int* getGuess() { return guess; };
+    int* getReply() { return reply; };
     int getEndGame() { return endGame; };
 };
