@@ -1,4 +1,5 @@
 #include "XLDisplay.h"
+#include <stdexcept>
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
@@ -17,32 +18,33 @@ std::vector<int> XLDisplay::xl_colors;
 
 XFontStruct* XLDisplay::xl_font;
 
-const char * XLDisplay::font =  "*-clean-*-r-*-*-*-*";
-
+const char * XLDisplay::font =  "*-liberation sans-*-r-*-*-*-*";
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
-void XLDisplay::init(int32_t w, int32_t h, const std::string& t) {
-    if (_display != nullptr) {
+void XLDisplay::init(int32_t w, int32_t h, const std::string& t)
+{
+    if (_display != nullptr)
+    {
         return;
     }
 
     XInitThreads();
 
     xl_dpy = XOpenDisplay(0);
-
-    if(xl_dpy == nullptr) {
+ if(xl_dpy == nullptr)
+    {
         throw std::runtime_error("XOpenDisplay: cannot open display.\n");
     }
 
     int black = BlackPixel(xl_dpy, DefaultScreen(xl_dpy));
     int white = WhitePixel(xl_dpy, DefaultScreen(xl_dpy));
 
-    // (0,0): coordenadas del origen, esquina superior izquierda de la ventana
-    // 3: borde de la ventana
+    // (0,0) coordenadas del origen, esquina superior izquierda de la ventana
+    // 3 borde de la ventana
     // white, negro (black) borde y blanco (white) fondo de la ventana
-    xl_wdw = XCreateSimpleWindow(xl_dpy, DefaultRootWindow(xl_dpy), 0, 0, w, h, 3, black, white);
-
+    xl_wdw = XCreateSimpleWindow(xl_dpy, DefaultRootWindow(xl_dpy),
+            0, 0, w, h, 3, black, white);
     XSetWindowAttributes attr;
     attr.backing_store = Always;
 
@@ -62,69 +64,65 @@ void XLDisplay::init(int32_t w, int32_t h, const std::string& t) {
     //Inicializa el mapa de colores
     xl_cm =  DefaultColormap(xl_dpy, DefaultScreen(xl_dpy));
 
-    std::vector<std::string> named = {"red", "brown", "blue", "yellow", "green"};
+    std::vector<std::string> named = {"red", "brown", "blue", "yellow", "green","purple","orange","fuchsia","white","black","peru","sienna"};
 
-    for (auto nc : named) {
+    for (auto nc : named)
+    {
         XColor tmpc;
 
         int rc = XAllocNamedColor(xl_dpy, xl_cm, nc.c_str(), &tmpc, &tmpc);
 
-        if (rc == 0) {
+        if (rc == 0)
+        {
             throw std::runtime_error("XAllocNamedColor: cannot allocate" + nc + "\n");
         }
 
         xl_colors.push_back(tmpc.pixel);
     }
+    // xl_colors.push_back(white);
 
-    xl_colors.push_back(white);
-    xl_colors.push_back(black);
+    //xl_colors.push_back(black);
 
     // Carga la fuente por defecto
     xl_font = XLoadQueryFont(xl_dpy, const_cast<char *>(font));
 
-    if ( xl_font == nullptr ) {
+    if ( xl_font == nullptr )
+    {
         throw std::runtime_error("XLoadQueryFont: cannot load font.\n");
     }
-
-    XSetFont(xl_dpy, xl_gc, xl_font->fid);
+ XSetFont(xl_dpy, xl_gc, xl_font->fid);
 
     // Espera al evento MapNotify
-    while (true) {
+    while (true)
+    {
         XEvent e;
 
         XNextEvent(xl_dpy, &e);
 
         if (e.type == MapNotify)
             break;
-        if (e.type == ConfigureNotify) {
-            XConfigureEvent xce = e.xconfigure;
-
-            if (xce.width != w || xce.height != h) {
-                w = xce.width;
-                h = xce.height;
-                //draw_forms();
-            } 
-        }
     }
-
-    //Inicializa el puntero singleton
+       //Inicializa el puntero singleton
     _display = std::unique_ptr<XLDisplay>(new XLDisplay);
 }
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
-char XLDisplay::wait_key() {
+char XLDisplay::wait_key()
+{
     XEvent event;
 
-    while(true) {
+    while(true)
+    {
         XNextEvent(xl_dpy, &event);
 
-        if (event.type != KeyPress) {
+        if ( event.type != KeyPress )
+        {
             continue;
         }
+        
 
         return XLookupKeysym(&event.xkey,0);
     }
 }
-
