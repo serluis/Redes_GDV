@@ -86,10 +86,13 @@ void pintar(std::vector<vector<int>> part){
             
             if(j<4){
                 dpy.circle(45*(j+1),35*(i+1),10);
+                dpy.set_color(XLDisplay::BLACK);
+                dpy.circleEdge(45*(j+1),35*(i+1),10);
             }
             else{
                 //dpy.circle(((j+1)*20)+150 ,35*(i+1),5);
                 dpy.circle(150 + (j+1)*20,35*(i+1),5);
+                dpy.circleEdge(150 + (j+1)*20,35*(i+1),5);
             }
 		}
 	}
@@ -194,7 +197,8 @@ std::vector<int> redondeles(int ronda)
                 break;
         }
         dpy.circle(45*(pos+1),35*(ronda+1),10);
-        
+        dpy.set_color(XLDisplay::BLACK);
+        dpy.circleEdge(45*(pos+1),35*(ronda+1),10);
     }
     dpy.flush();
     return comb;
@@ -355,9 +359,12 @@ int main(int argc, char** argv)
             //pone finpartida a 0 o 1
             if(linea[0]==1){
                 finpartida=1;
+                
             }
             if(finpartida==1){
-                //proceso ganar();
+                dpy.set_color(XLDisplay::BLUE);
+                dpy.text(150, 150, "Tu ganas!");
+                dpy.flush();
                 //salir bucle
             }
             else{
@@ -371,7 +378,9 @@ int main(int argc, char** argv)
             pintar(part);
             //realiza comprobacion de fin de partida
             if(finpartida==1){
-                //proceso perder();
+                dpy.set_color(XLDisplay::BLUE);
+                dpy.text(150, 150, "Tu pierdes!");
+                dpy.flush();
                 //salir bucle
             }
             else{
@@ -380,17 +389,11 @@ int main(int argc, char** argv)
             ronda++;
         }
     }
-    /*realiza comprobacion de fin de partida
+    //realiza comprobacion de fin de partida
     if(finpartida==0){
-        proceso perder();
-    }
-    else {
-        if(turno == 1){
-            proceso ganar();
-        }
-        else{
-            proceso perder();
-        }
+        dpy.set_color(XLDisplay::BLUE);
+        dpy.text(150, 150, "¡Perdeis ambos!");
+        dpy.flush();
     }
     //escribir q para salir y cerrar conexion*/
     wait();
