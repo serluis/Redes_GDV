@@ -18,7 +18,7 @@ std::vector<int> XLDisplay::xl_colors;
 
 XFontStruct* XLDisplay::xl_font;
 
-const char * XLDisplay::font =  "*-liberation sans-*-r-*-*-*-*";
+const char * XLDisplay::font =  "*-clean-*-*-*-*-*-*";
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
@@ -32,8 +32,7 @@ void XLDisplay::init(int32_t w, int32_t h, const std::string& t)
     XInitThreads();
 
     xl_dpy = XOpenDisplay(0);
- if(xl_dpy == nullptr)
-    {
+    if(xl_dpy == nullptr) {
         throw std::runtime_error("XOpenDisplay: cannot open display.\n");
     }
 

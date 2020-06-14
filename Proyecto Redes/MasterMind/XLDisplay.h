@@ -32,7 +32,7 @@ public:
         PERU    = 10,
         SIENNA  = 11,
     };
- // -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Constructores. Implementa el patrón singleton
     // -------------------------------------------------------------------------
     // El programa principal debe llamar a la función init, ej.
@@ -51,13 +51,11 @@ public:
 
     static void init(int32_t w, int32_t h, const std::string& t);
 
-    ~XLDisplay()
-    {
+    ~XLDisplay() {
         XFreeColormap(xl_dpy, xl_cm);
     }
 
-    static XLDisplay& display()
-    {
+    static XLDisplay& display() {
         return *_display.get();
     }
 
@@ -65,20 +63,17 @@ public:
     // Funciones de render
     // -------------------------------------------------------------------------
     
-    void set_color(XLColor c)
-    {
+    void set_color(XLColor c) {
         XSetForeground(xl_dpy, xl_gc, xl_colors[c]);
     }
 
     // Dibuja un punto en (x,y)
-    void point( int32_t x, int32_t y )
-      {
+    void point(int32_t x, int32_t y) {
         XDrawPoint(xl_dpy, xl_wdw, xl_gc, x, y);
     }
 
     // Dibuja una línea desde (x1,y1) a (x2,y2)
-    void line( int32_t x1, int32_t y1, int32_t x2, int32_t y2 )
-    {
+    void line(int32_t x1, int32_t y1, int32_t x2, int32_t y2) {
         XDrawLine(xl_dpy, xl_wdw, xl_gc,x1,y1,x2,y2);
     }
 
@@ -87,44 +82,39 @@ public:
     //
     // XPoint pts [] = {{0,0},{15,15},{0,15},{0,0}}
     // int npoints = 4;
-    void lines(XPoint * points, int npoints)
-     {
+    void lines(XPoint * points, int npoints) {
         XDrawLines(xl_dpy, xl_wdw, xl_gc, points, npoints, CoordModeOrigin);
     }
 
     // Dibuja un círculo con centro en (x,y) y radio r
-    void circle(int32_t x, int32_t y, int32_t r)
-    {
+    void circle(int32_t x, int32_t y, int32_t r) {
        // XDrawArc(xl_dpy, xl_wdw, xl_gc, x-r, y - r, 2 * r, 2 * r, 0, 360*64);
         XFillArc(xl_dpy, xl_wdw, xl_gc, x-r, y - r, 2 * r, 2 * r, 0, 360*64);
     }
+
     void circleEdge(int32_t x, int32_t y, int32_t r){
         XDrawArc(xl_dpy, xl_wdw, xl_gc, x-r, y - r, 2 * r, 2 * r, 0, 360*64);
     }
-// Dibuja un rectángulo con vértice superior-izquierdo en (x,y), ancho w
-    // y alto h
-    void rectangle(int32_t x, int32_t y, int32_t w, int32_t h)
-    {
+
+    // Dibuja un rectángulo con vértice superior-izquierdo en (x,y), ancho w y alto h
+    void rectangle(int32_t x, int32_t y, int32_t w, int32_t h) {
         XDrawRectangle(xl_dpy, xl_wdw, xl_gc, x, y, w, h);
     }
-    void rectangleFill(int32_t x, int32_t y, int32_t w, int32_t h){
+    void rectangleFill(int32_t x, int32_t y, int32_t w, int32_t h) {
         XFillRectangle(xl_dpy, xl_wdw, xl_gc, x, y, w, h);
     }
     // Escribe un texto en la posición (x,y)
-    void text(int32_t x, int32_t y, const std::string& txt)
-     {
+    void text(int32_t x, int32_t y, const std::string& txt) {
         XDrawString(xl_dpy, xl_wdw, xl_gc, x, y, txt.c_str(), txt.length());
     }
 
     // Vacía el buffer enviando los comandos al servidor y dibuja la ventana
-    void flush()
-    {
+    void flush() {
         XFlush(xl_dpy);
     }
 
     // Borra la ventana
-    void clear()
-    {
+    void clear() {
         XClearWindow(xl_dpy, xl_wdw);
     }
 

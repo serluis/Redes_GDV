@@ -7,28 +7,106 @@
 void GameServer::init() {
     // Crear la contrasena que deberan adivinar
     srand(time(NULL));
-    for (int i = 0; i < sizeof(pass); ++i) {
-        pass[i] = rand() % 10;
+    for (int i = 0; i < 4; ++i) {
+        pass.push_back(rand() % 10);
     }
 
     // Debug de la contrasena
-    std::cout << "\n> Password: { " << pass[0] << ", " << pass[1] << ", " << pass[2] << ", " << pass[3] << " };\n" << std::endl;
+    std::cout << "\n> Password: { " << pass.at(0) << ", " << pass.at(1) << ", " << pass.at(2) << ", " << pass.at(3) << " };\n" << std::endl;
 
     // Mandar a cada cliente quien es el primero y quien es el segundo
-    Message* msgP1 = new Message(0, 1, 2, 3, 4, 8, 9, 10, 11);
+    Message* msgP1 = new Message(1);
     P1->send(*msgP1);
+    Message* msgP2 = new Message(0);
+    P2->send(*msgP2);
 }
 
 void GameServer::update() {
     std::cout << "UPDATE!" << std::endl;
-    end = true;
+
+    // Recibir la propuesta del jugador correspondiente
+    Socket* sock;
+    Message *msgRecv = new Message();
+    if (player1)
+        P1->recv(*msgRecv, sock);
+    else P2->recv(*msgRecv, sock);
+
+    // Comprobar si la solucion es correcta: LINEA DE TURNO
+    std::vector<int>lt = solution(pass, msgRecv->getGuess());
+    
+    Message* msgP1 = new Message(lt.at(0), lt.at(1), lt.at(2), lt.at(3), lt.at(4), lt.at(5), lt.at(6), lt.at(7), lt.at(8));
+    P1->send(*msgP1);
+    Message* msgP2 = new Message(lt.at(0), lt.at(1), lt.at(2), lt.at(3), lt.at(4), lt.at(5), lt.at(6), lt.at(7), lt.at(8));
+    P2->send(*msgP2);
+
+    // Ahora el turno es del otro jugador
+    player1 = !player1;
 }
 
+std::vector<int> GameServer::solution(std::vector<int> pass, std::vector<int> guess) {
+    // Solucion auxiliar
+    std::vector<int> sol = { 0, 11, 11, 11, 11, 11, 11, 11, 11 };
+    //mete la prueba del jugador a la respuesta
+    for (int i = 0; i < 4; i++){
+        sol.at(i + 1) = guess.at(i);
+    }
+
+    // en mala posicion
+    if (pass.at(0) == guess.at(1) || pass.at(0) == guess.at(2) || pass.at(0) == guess.at(3)){
+        sol[5]=9;
+    }
+    if (pass.at(1) == guess.at(0) || pass.at(1) == guess.at(2) || pass.at(1) == guess.at(3)){
+        sol[6]=9;
+    }
+    if (pass.at(2) == guess.at(0) || pass.at(2) == guess.at(1) || pass.at(2) == guess.at(3)){
+        sol[7]=9;
+    }
+    if (pass.at(3) == guess.at(0) || pass.at(3) == guess.at(1) || pass.at(3) == guess.at(2)) {
+        sol[8]=9;
+    }
+    //correctos
+    if (pass.at(0) == guess.at(0)){
+        sol[5]=8;
+    }
+    if (pass.at(1) == guess.at(1)){
+        sol[6]=8;
+    }
+    if (pass.at(2) == guess.at(2)){
+        sol[7]=8;
+    }
+    if (pass.at(3) == guess.at(3)){
+        sol[8]=8;
+    }
+    //fin de partida correcta
+    if(pass.at(0) == guess.at(0) && pass.at(1) == guess.at(1) 
+        && pass.at(2) == guess.at(2) && pass.at(3) == guess.at(3))
+	{
+        sol[0]=1;
+    }
+
+    return sol;
+}
 // ---------------------------------------------------------------------- //
 // --- CLIENT ----------------------------------------------------------- //
 // ---------------------------------------------------------------------- //
 
 void GameClient::init() {
+    // Crear el vector historico de jugadas
+    game = std::vector<std::vector<int>>(TURNS);
+    // Llenar el historico de jugadas
+    for (int i = 0; i < game.size(); i++) {
+		game.at(i).resize(PINS);
+		for (int j = 0; j < game.at(i).size(); j++)
+			game.at(i).at(j) = 11;
+	}
+
+    // Pintar el tablero
+    XLDisplay::init(width, heigth, "MasterMind");
+    // Limpiar la pantalla
+    dpy.clear();
+    // Pintar la partida
+    drawBoard(dpy, game);
+
     // Recibir si eres el player one o el player two
     Socket* sock;
     Message* msgTurn = new Message();
@@ -36,24 +114,196 @@ void GameClient::init() {
 
     std::cout << "Juegas primero: " << msgTurn->getEndGame() << std::endl;
     
-    playFirst = !msgTurn->getEndGame();
-}
-
-void GameClient::handleInput() {
-    std::cout << "HANDLE INPUT" << std::endl;
+    // Asigna si juegas primero 
+    playFirst = msgTurn->getEndGame();
 }
 
 void GameClient::update() {
-    std::cout << "UPDATE" << std::endl;
-    end = true;
+    if (turn < 12) {
+        if (playFirst) {
+            guess = setGuess(dpy, turn);
+
+            // Serielizar el objeto guess y mandarlo al servidor
+            Message* msgSend = new Message(0, guess.at(0), guess.at(1), guess.at(2), guess.at(3));
+            server.send(*msgSend);
+            // Recibir el mensaje del servidor con las correctas e incorrectas
+            Socket* sock;
+            Message* msgRecv = new Message();
+            server.recv(*msgRecv, sock);
+
+            // Actualiza el historico
+            end = msgRecv->getEndGame();
+            std::vector<int> rp = msgRecv->getReply();
+
+            for(int h = 0; h < 4; h++) {
+                game.at(turn).at(h) = guess.at(h);
+                game.at(turn).at(h + 4) = rp.at(h);
+            }
+
+            // Debug de la ronda
+            std::cout << "> ronda: ";
+            for(int h = 0; h < 8; h++)
+                std::cout << game.at(turn).at(h) << " ";
+            std::cout << std::endl;
+
+            // Limpiar la pantalla entera porque hay que volver a renderizarla
+            dpy.clear();
+            drawBoard(dpy, game);
+
+            if (end) {
+                // Mensaje por consola
+                std::cout << "> HAS GANADO! " << std::endl;
+                // Mensaje por ventana del juego
+                dpy.set_color(XLDisplay::BLUE);
+                dpy.text(150, 150, "TU GANAS!");
+                dpy.flush();
+            }
+        }
+        else {
+            // Recibir el mensaje del servidor con las correctas e incorrectas
+            Socket* sock;
+            Message* msgRecv = new Message();
+            server.recv(*msgRecv, sock);
+
+            // Actualiza el historico
+            end = msgRecv->getEndGame();
+            std::vector<int> gs = msgRecv->getGuess();
+            std::vector<int> rp = msgRecv->getReply();
+
+            for(int h = 0; h < 4; h++) {
+                game.at(turn).at(h) = gs.at(h);
+                game.at(turn).at(h + 4) = rp.at(h);
+            }
+
+            // Debug de la ronda
+            std::cout << "> ronda del otro jugador: ";
+            for(int h = 0; h < 8; h++)
+                std::cout << game.at(turn).at(h) << " ";
+            std::cout << std::endl;
+
+            // Limpiar la pantalla entera porque hay que volver a renderizarla
+            dpy.clear();
+            drawBoard(dpy, game);
+
+            if (end) {
+                // Mensaje por consola
+                std::cout << "> TU PIERDES! " << std::endl;
+                // Mensaje por ventana del juego
+                dpy.set_color(XLDisplay::BLUE);
+                dpy.text(150, 150, "TU PIERDES!");
+                dpy.flush();
+            }
+        }
+    }
+    
+    ++turn;
+    if (turn > 12) {
+        // Mensaje por consola
+        std::cout << "> TABLAS! NADIE HA GANADO " << std::endl;
+        // Mensaje por ventana del juego
+        dpy.set_color(XLDisplay::BLUE);
+        dpy.text(150, 150, "TABLAS! NADIE HA GANADO");
+        dpy.flush();
+    }
+    playFirst = !playFirst;
 }
 
-void GameClient::render() {
-    std::cout << "RENDER" << std::endl;
+std::vector<int> GameClient::setGuess(XLDisplay& dpy, int turn) {
+    // Booleano de envio de la contrasena
+    bool acabado = false;
+
+    // Poner los circulos de color rojo con borde negro
+    dpy.set_color(XLDisplay::RED);
+    for(int i = 0; i < 4; i++) {
+        dpy.circle(45 * (i + 1), 35 * (turn + 1), 10);
+        dpy.set_color(XLDisplay::BLACK);
+        dpy.circleEdge(45 * (i + 1), 35 * (turn + 1), 10);
+    }
+
+    // Return auxiliar de la combinacion
+    std::vector<int> comb = {0,0,0,0};
+    // Auxiliar para seleccionar la chincheta
+    int pos = 0;
+    while(!acabado) {
+        // Pide una tecla
+        char dir = dpy.wait_key();
+        switch (dir) {
+            case 'w': { if(comb[pos] == 9)  comb[pos] = 0;  else comb[pos]++;   } break;
+            case 'a': { if(pos == 0)        pos = 3;        else pos--;         } break;
+            case 's': { if(comb[pos] == 0)  comb[pos] = 9;  else comb[pos]--;   } break;
+            case 'd': { if(pos == 3)        pos = 0;        else pos++;         } break;
+            // Tecla del intro
+            case 'e': { acabado = true; } break;
+            default: break;
+        }
+        switch (comb[pos]) {
+            case 0: { dpy.set_color(XLDisplay::RED);     }   break;
+            case 1: { dpy.set_color(XLDisplay::BROWN);   }   break;
+            case 2: { dpy.set_color(XLDisplay::BLUE);    }   break;
+            case 3: { dpy.set_color(XLDisplay::YELLOW);  }   break;
+            case 4: { dpy.set_color(XLDisplay::GREEN);   }   break;
+            case 5: { dpy.set_color(XLDisplay::PURPLE);  }   break;
+            case 6: { dpy.set_color(XLDisplay::ORANGE);  }   break;
+            case 7: { dpy.set_color(XLDisplay::FUCHSIA); }   break;
+            case 8: { dpy.set_color(XLDisplay::WHITE);   }   break;
+            case 9: { dpy.set_color(XLDisplay::BLACK);   }   break;
+            default: break;
+        }
+
+        dpy.circle(45 * (pos + 1), 35 * (turn + 1), 10);
+        dpy.set_color(XLDisplay::BLACK);
+        dpy.circleEdge(45 * (pos + 1), 35 * (turn + 1), 10);
+    }
+    dpy.flush();
+    return comb;
 }
 
-void GameClient::drawBoard(XLDisplay& dpy) {
+void GameClient::drawBoard(XLDisplay& dpy, std::vector<std::vector<int>> part) {
+    // Dibujar el fondo del tablero
+    dpy.set_color(XLDisplay::PERU);
+    dpy.rectangleFill(10,10,380,440);
+    // Decorativo exterior 1
+    dpy.set_color(XLDisplay::GREEN);
+    dpy.rectangle(10,10,380,440);
+    // Decorativo exterior 2
+    dpy.set_color(XLDisplay::RED);
+    dpy.rectangle(12,12,376,436);
 
+    for (int i = 0; i < part.size(); i++) {
+		for (int j = 0; j < part.at(i).size(); j++) {
+            // Selector de color
+			switch (part.at(i).at(j)) {
+            case 0: { dpy.set_color(XLDisplay::RED);     }   break;
+            case 1: { dpy.set_color(XLDisplay::BROWN);   }   break;
+            case 2: { dpy.set_color(XLDisplay::BLUE);    }   break;
+            case 3: { dpy.set_color(XLDisplay::YELLOW);  }   break;
+            case 4: { dpy.set_color(XLDisplay::GREEN);   }   break;
+            case 5: { dpy.set_color(XLDisplay::PURPLE);  }   break;
+            case 6: { dpy.set_color(XLDisplay::ORANGE);  }   break;
+            case 7: { dpy.set_color(XLDisplay::FUCHSIA); }   break;
+            case 8: { dpy.set_color(XLDisplay::WHITE);   }   break;
+            case 9: { dpy.set_color(XLDisplay::BLACK);   }   break;
+            case 10: { dpy.set_color(XLDisplay::PERU);   }   break;
+            case 11: { dpy.set_color(XLDisplay::SIENNA); }   break;
+            default: break;
+            }
+            // Si son las chinchetas guess
+            if(j < 4){
+                // Posicion donde se dibuja. Tamano = 10
+                dpy.circle(45 * (j + 1), 35 * (i + 1), 10);
+                // Reborde de la chincheta
+                dpy.set_color(XLDisplay::BLACK);
+                dpy.circleEdge(45 * (j + 1), 35 * (i + 1), 10);
+            }
+            // Si son las chinchetas reply
+            else {
+                // Posicion donde se dibuja. Tamano = 5
+                dpy.circle(150 + (j + 1) * 20, 35 * (i + 1), 5);
+                dpy.circleEdge(150 + (j + 1) * 20, 35 * (i + 1), 5);
+            }
+		}
+	}
+    dpy.flush();
 }
 
 // ---------------------------------------------------------------------- //

@@ -16,18 +16,21 @@ private:
     Socket *P1, *P2;
     // Booleano de fin del juego
     bool end;
+    // Booleano para saber si juega el player 1
+    bool player1;
     // Contraseña
-    int pass[4] = {};
+    std::vector<int> pass = {};
 public:
     // Constructora y destructora
     GameServer(Socket sock, Socket* player_ONE, Socket* player_TWO) 
-     : server(sock), P1(player_ONE), P2(player_TWO), end(false) {
+     : server(sock), P1(player_ONE), P2(player_TWO), end(false), player1(true) {
         init();
     };
     ~GameServer() {};
 
     // Metodos especificos del juego 
     void init();
+    std::vector<int> solution(std::vector<int>pass, std::vector<int>guess);
 
     // Metodos tradicionales del juego
     void update();
@@ -42,6 +45,11 @@ public:
 
 class GameClient {
 private:
+    // Turnos y chinchetas
+    static const int TURNS = 12;
+    static const int PINS = 8;
+    // Xlib11
+    XLDisplay& dpy;
     // Servidor
     Socket server;
     // Alto y ancho de la pestaña
@@ -50,24 +58,30 @@ private:
     bool end;
     // Quien es el primero en jugar
     bool playFirst;
+    // Ronda actual
+    int turn;
+    // Combinacion que manda por mensajes
+    std::vector<int> guess = { 0, 0, 0, 0 };
+    // Historico de jugadas
+    std::vector<std::vector<int>> game;
 public:
     // Constructora y destructora
     GameClient(Socket sock, int w, int h) 
-     : server(sock), width(w), heigth(h), end(false) {
+     : server(sock), width(w), heigth(h), end(false),
+        dpy(XLDisplay::display()), turn(0) {
         init();
     };
     ~GameClient() {};
 
     // Metodos especificos del juego 
     void init();
-    void drawBoard(XLDisplay& dpy);
+    void drawBoard(XLDisplay& dpy, std::vector<std::vector<int>> part);
 
     // Metodos tradicionales del juego
-    void handleInput();
-    void render();
     void update();
 
     // Getters y Setters
+    std::vector<int> setGuess(XLDisplay& dpy, int turn);
     bool getEnd() { return end; };
 };
 
@@ -98,7 +112,7 @@ public:
     int from_bin(char * bobj);
 
     // Getters y setters
-    //int* getGuess() { int i[] = { guess1, guess2, guess3, guess4 }; return i; };
-    //int* getReply() { int i[] = { reply1, reply2, reply3, reply4 }; return i; };
+    std::vector<int> getGuess() { return { guess1, guess2, guess3, guess4 }; };
+    std::vector<int> getReply() { return { reply1, reply2, reply3, reply4 }; };
     int getEndGame() { return endGame; };
 };
