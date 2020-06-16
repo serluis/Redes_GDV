@@ -22,8 +22,6 @@ void GameServer::init() {
 }
 
 void GameServer::update() {
-    std::cout << "UPDATE!" << std::endl;
-
     // Recibir la propuesta del jugador correspondiente
     Socket* sock;
     Message *msgRecv = new Message();
@@ -31,9 +29,19 @@ void GameServer::update() {
         P1->recv(*msgRecv, sock);
     else P2->recv(*msgRecv, sock);
 
+    // Debug pass y guess
+    std::cout << "\n> Password: { " << pass.at(0) << ", " << pass.at(1) << ", " << pass.at(2) << ", " << pass.at(3) << " };" << std::endl;
+    std::cout << "> Guess: { " << msgRecv->getGuess().at(0) << ", " << msgRecv->getGuess().at(1) << ", " << msgRecv->getGuess().at(2) << ", " << msgRecv->getGuess().at(3) << " };\n" << std::endl;
+
     // Comprobar si la solucion es correcta: LINEA DE TURNO
     std::vector<int>lt = solution(pass, msgRecv->getGuess());
     
+
+    std::cout << "> linea: { ";
+    for(int i = 0; i < 9; ++i)
+        std::cout << lt.at(i) << " ";
+    std::cout << "};\n" << std::endl;
+
     Message* msgP1 = new Message(lt.at(0), lt.at(1), lt.at(2), lt.at(3), lt.at(4), lt.at(5), lt.at(6), lt.at(7), lt.at(8));
     P1->send(*msgP1);
     Message* msgP2 = new Message(lt.at(0), lt.at(1), lt.at(2), lt.at(3), lt.at(4), lt.at(5), lt.at(6), lt.at(7), lt.at(8));
@@ -46,42 +54,42 @@ void GameServer::update() {
 std::vector<int> GameServer::solution(std::vector<int> pass, std::vector<int> guess) {
     // Solucion auxiliar
     std::vector<int> sol = { 0, 11, 11, 11, 11, 11, 11, 11, 11 };
-    //mete la prueba del jugador a la respuesta
+    
+    // Mete la prueba del jugador a la respuesta
     for (int i = 0; i < 4; i++){
         sol.at(i + 1) = guess.at(i);
     }
 
-    // en mala posicion
-    if (pass.at(0) == guess.at(1) || pass.at(0) == guess.at(2) || pass.at(0) == guess.at(3)){
-        sol[5]=9;
+    // En mala posicion
+    if (guess.at(0) == pass.at(1) || guess.at(0) == pass.at(2) || guess.at(0) == pass.at(3)){
+        sol.at(5) = 9;
     }
-    if (pass.at(1) == guess.at(0) || pass.at(1) == guess.at(2) || pass.at(1) == guess.at(3)){
-        sol[6]=9;
+    if (guess.at(1) == pass.at(0) || guess.at(1) == pass.at(2) || guess.at(1) == pass.at(3)){
+        sol.at(6) = 9;
     }
-    if (pass.at(2) == guess.at(0) || pass.at(2) == guess.at(1) || pass.at(2) == guess.at(3)){
-        sol[7]=9;
+    if (guess.at(2) == pass.at(0) || guess.at(2) == pass.at(1) || guess.at(2) == pass.at(3)){
+        sol.at(7) = 9;
     }
-    if (pass.at(3) == guess.at(0) || pass.at(3) == guess.at(1) || pass.at(3) == guess.at(2)) {
-        sol[8]=9;
+    if (guess.at(3) == pass.at(0) || guess.at(3) == pass.at(1) || guess.at(3) == pass.at(2)) {
+        sol.at(8) = 9;
     }
-    //correctos
+
+    // Correctos
     if (pass.at(0) == guess.at(0)){
-        sol[5]=8;
+        sol.at(5) = 8;
     }
     if (pass.at(1) == guess.at(1)){
-        sol[6]=8;
+        sol.at(6) = 8;
     }
     if (pass.at(2) == guess.at(2)){
-        sol[7]=8;
+        sol.at(7) = 8;
     }
     if (pass.at(3) == guess.at(3)){
-        sol[8]=8;
+        sol.at(8) = 8;
     }
-    //fin de partida correcta
-    if(pass.at(0) == guess.at(0) && pass.at(1) == guess.at(1) 
-        && pass.at(2) == guess.at(2) && pass.at(3) == guess.at(3))
-	{
-        sol[0]=1;
+    // Fin de partida correcta
+    if(pass.at(0) == guess.at(0) && pass.at(1) == guess.at(1) && pass.at(2) == guess.at(2) && pass.at(3) == guess.at(3)) {
+        sol.at(0) = 1;
     }
 
     return sol;
@@ -197,7 +205,7 @@ void GameClient::update() {
     }
     
     ++turn;
-    if (turn > 12) {
+    if (turn == 13) {
         // Mensaje por consola
         std::cout << "> TABLAS! NADIE HA GANADO " << std::endl;
         // Mensaje por ventana del juego
@@ -211,10 +219,12 @@ void GameClient::update() {
 std::vector<int> GameClient::setGuess(XLDisplay& dpy, int turn) {
     // Booleano de envio de la contrasena
     bool acabado = false;
+    // Auxiliar para el cursor
+    int sel = 0;
 
     // Poner los circulos de color rojo con borde negro
-    dpy.set_color(XLDisplay::RED);
     for(int i = 0; i < 4; i++) {
+        dpy.set_color(XLDisplay::RED);
         dpy.circle(45 * (i + 1), 35 * (turn + 1), 10);
         dpy.set_color(XLDisplay::BLACK);
         dpy.circleEdge(45 * (i + 1), 35 * (turn + 1), 10);
@@ -229,13 +239,30 @@ std::vector<int> GameClient::setGuess(XLDisplay& dpy, int turn) {
         char dir = dpy.wait_key();
         switch (dir) {
             case 'w': { if(comb[pos] == 9)  comb[pos] = 0;  else comb[pos]++;   } break;
-            case 'a': { if(pos == 0)        pos = 3;        else pos--;         } break;
             case 's': { if(comb[pos] == 0)  comb[pos] = 9;  else comb[pos]--;   } break;
-            case 'd': { if(pos == 3)        pos = 0;        else pos++;         } break;
+            case 'a': { 
+                if (pos == 0)   pos = 3;    else pos--;
+                if (sel == 0)   sel = 3;    else sel--;
+            } break;
+            case 'd': { 
+                if (pos == 3)   pos = 0;    else pos++; 
+                if (sel == 3)   sel = 0;    else sel++;
+            } break;
             // Tecla del intro
             case 'e': { acabado = true; } break;
             default: break;
         }
+
+        // Coloreado del cursor
+        for (int i = 0; i < 4; ++i) {
+            if (i == sel) 
+                dpy.set_color(XLDisplay::BLACK);
+            else dpy.set_color(XLDisplay::SIENNA);
+
+            dpy.circle(45 * (i + 1), 35 * (turn + 1), 12);
+            dpy.circleEdge(45 * (i + 1), 35 * (turn + 1), 12);
+        }
+        // Seleccion del color de la chincheta
         switch (comb[pos]) {
             case 0: { dpy.set_color(XLDisplay::RED);     }   break;
             case 1: { dpy.set_color(XLDisplay::BROWN);   }   break;
@@ -249,7 +276,6 @@ std::vector<int> GameClient::setGuess(XLDisplay& dpy, int turn) {
             case 9: { dpy.set_color(XLDisplay::BLACK);   }   break;
             default: break;
         }
-
         dpy.circle(45 * (pos + 1), 35 * (turn + 1), 10);
         dpy.set_color(XLDisplay::BLACK);
         dpy.circleEdge(45 * (pos + 1), 35 * (turn + 1), 10);
