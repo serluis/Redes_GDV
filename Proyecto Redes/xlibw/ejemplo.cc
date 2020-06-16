@@ -10,30 +10,8 @@
 #define R 12 //rondas 8
 #define C 8  //combinacion
 using namespace std;
-
-//sera llamado para actualizar la partida en cada paso
-void pintar(std::vector<vector<int>> part){
-    
-    XLDisplay& dpy = XLDisplay::display();
-    dpy.set_color(XLDisplay::PERU);
-    dpy.rectangleFill(10,10,380,440);
-    dpy.set_color(XLDisplay::GREEN);
-    dpy.rectangle(10,10,380,440);
-    dpy.set_color(XLDisplay::RED);
-    dpy.rectangle(12,12,376,436);
-    
-    //dpy.text(150, 25, "MasterMind");
-    /*dpy.set_color(XLDisplay::SIENNA);
-    for(int i=0;i<12;i++){
-        for(int j=0;j<4;j++){
-            dpy.circle(45*(j+1),35*(i+1),10);
-            dpy.circle(200 + (j+1)*20,35*(i+1),5);
-        }
-    }*/
-
-    for (int i = 0; i < part.size(); i++) {
-		for (int j = 0; j < part.at(i).size(); j++) {
-			switch (part.at(i).at(j))
+void colorSelector(XLDisplay& dpy, int num){
+    switch (num)
             {
             case 0:
                 dpy.set_color(XLDisplay::RED);
@@ -83,7 +61,32 @@ void pintar(std::vector<vector<int>> part){
             default:
                 break;
             }
-            
+}
+//sera llamado para actualizar la partida en cada paso
+void pintar(std::vector<vector<int>> part){
+    
+    XLDisplay& dpy = XLDisplay::display();
+    dpy.set_color(XLDisplay::PERU);
+    dpy.rectangleFill(10,10,380,440);
+    dpy.set_color(XLDisplay::GREEN);
+    dpy.rectangle(10,10,380,440);
+    dpy.set_color(XLDisplay::RED);
+    dpy.rectangle(12,12,376,436);
+    
+    //dpy.text(150, 25, "MasterMind");
+    /*dpy.set_color(XLDisplay::SIENNA);
+    for(int i=0;i<12;i++){
+        for(int j=0;j<4;j++){
+            dpy.circle(45*(j+1),35*(i+1),10);
+            dpy.circle(200 + (j+1)*20,35*(i+1),5);
+        }
+    }*/
+
+    for (int i = 0; i < part.size(); i++) {
+		for (int j = 0; j < part.at(i).size(); j++) {
+			/*switch (part.at(i).at(j))
+            {}*/
+            colorSelector(dpy,part.at(i).at(j));
             if(j<4){
                 dpy.circle(45*(j+1),35*(i+1),10);
                 dpy.set_color(XLDisplay::BLACK);
@@ -103,12 +106,21 @@ std::vector<int> redondeles(int ronda)
 {
     bool acabado = false;
     XLDisplay& dpy = XLDisplay::display();
-    dpy.set_color(XLDisplay::RED);
     for(int i=0;i<4;i++){
+        if(i==0){
+            dpy.set_color(XLDisplay::BLACK);
+            dpy.circleEdge(45*(i+1),35*(ronda+1),10);
+        }
+        dpy.set_color(XLDisplay::RED);
         dpy.circle(45*(i+1),35*(ronda+1),10);
     }
     std::vector<int> comb = {0,0,0,0};
     int pos = 0;
+            dpy.set_color(XLDisplay::BLACK);    
+            dpy.circle(45*(pos+1),35*(ronda+1),12);
+            dpy.circleEdge(45*(pos+1),35*(ronda+1),12);
+            dpy.set_color(XLDisplay::RED);
+            dpy.circle(45*(pos+1),35*(ronda+1),10);
     while(!acabado){
         char dir = dpy.wait_key();
         switch (dir)
@@ -145,60 +157,34 @@ std::vector<int> redondeles(int ronda)
                         pos++;
                     }
                     break;
-            case 'l':
+            case 'n':
                     acabado = true;
                     break;
             default:
                 break;
         }
-        switch (comb[pos])
-        {
-            case 0:
-                dpy.set_color(XLDisplay::RED);
-                break;
-        
-            case 1:
-                dpy.set_color(XLDisplay::BROWN);
-                break;
-        
-            case 2:
-                dpy.set_color(XLDisplay::BLUE);
-                break;
-        
-            case 3:
-                dpy.set_color(XLDisplay::YELLOW);
-                break;
-        
-            case 4:
-                dpy.set_color(XLDisplay::GREEN);
-                break;
-        
-            case 5:
-                dpy.set_color(XLDisplay::PURPLE);
-                break;
-        
-            case 6:
-                dpy.set_color(XLDisplay::ORANGE);
-                break;
-        
-            case 7:
-                dpy.set_color(XLDisplay::FUCHSIA);
-                break;
-        
-            case 8:
-                dpy.set_color(XLDisplay::WHITE);
-                break;
-        
-            case 9:
-                dpy.set_color(XLDisplay::BLACK);
-                break;
-        
-            default:
-                break;
+        //reborde
+        for(int c=0;c<4;c++){
+            
+            if(c==pos){
+            dpy.set_color(XLDisplay::BLACK);    
+            dpy.circle(45*(c+1),35*(ronda+1),12);
+            dpy.circleEdge(45*(c+1),35*(ronda+1),12);
+            }
+            else{
+            dpy.set_color(XLDisplay::PERU);    
+            dpy.circle(45*(c+1),35*(ronda+1),12);
+            dpy.circleEdge(45*(c+1),35*(ronda+1),12);
+            }
         }
-        dpy.circle(45*(pos+1),35*(ronda+1),10);
+        //interior
+        for(int c=0;c<4;c++){
+        colorSelector(dpy,comb[c]);
+        dpy.circle(45*(c+1),35*(ronda+1),10);
         dpy.set_color(XLDisplay::BLACK);
-        dpy.circleEdge(45*(pos+1),35*(ronda+1),10);
+        dpy.circleEdge(45*(c+1),35*(ronda+1),10);
+        }
+        
     }
     dpy.flush();
     return comb;
@@ -222,7 +208,8 @@ void wait()
 }
 
 /*cont = jugador*//*comb = server*/
-std::vector<int> solucion(const std::vector<int> cont, const std::vector<int> comb){
+std::vector<int> solucion(const std::vector<int> cont, 
+const std::vector<int> comb){
     //se inicializa el vector a devolver
     //por defecto en no fin
     std::vector<int> sol={0, 11,11,11,11, 11,11,11,11};
@@ -392,7 +379,7 @@ int main(int argc, char** argv)
     //realiza comprobacion de fin de partida
     if(finpartida==0){
         dpy.set_color(XLDisplay::BLUE);
-        dpy.text(150, 150, "¡Perdeis ambos!");
+        dpy.text(150, 150, "Perdeis ambos!");
         dpy.flush();
     }
     //escribir q para salir y cerrar conexion*/
