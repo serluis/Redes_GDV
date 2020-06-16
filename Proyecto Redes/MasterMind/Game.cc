@@ -206,6 +206,8 @@ void GameClient::update() {
     
     ++turn;
     if (turn == 13) {
+        // Fin del juego
+        end = true;
         // Mensaje por consola
         std::cout << "> TABLAS! NADIE HA GANADO " << std::endl;
         // Mensaje por ventana del juego
@@ -224,16 +226,26 @@ std::vector<int> GameClient::setGuess(XLDisplay& dpy, int turn) {
 
     // Poner los circulos de color rojo con borde negro
     for(int i = 0; i < 4; i++) {
+        if (i == 0) {
+            dpy.set_color(XLDisplay::BLACK);
+            dpy.circleEdge(45 * (i + 1), 35 * (turn + 1), 10);
+        }
         dpy.set_color(XLDisplay::RED);
         dpy.circle(45 * (i + 1), 35 * (turn + 1), 10);
-        dpy.set_color(XLDisplay::BLACK);
-        dpy.circleEdge(45 * (i + 1), 35 * (turn + 1), 10);
     }
 
     // Return auxiliar de la combinacion
     std::vector<int> comb = {0,0,0,0};
     // Auxiliar para seleccionar la chincheta
     int pos = 0;
+
+    dpy.set_color(XLDisplay::BLACK);
+    dpy.circle(45 * (pos + 1), 35 * (turn + 1), 12);
+    dpy.circleEdge(45 * (pos + 1), 35 * (turn + 1), 12);
+
+    dpy.set_color(XLDisplay::RED);
+    dpy.circle(45 * (pos + 1), 35 * (turn + 1), 10);
+
     while(!acabado) {
         // Pide una tecla
         char dir = dpy.wait_key();
@@ -255,35 +267,42 @@ std::vector<int> GameClient::setGuess(XLDisplay& dpy, int turn) {
 
         // Coloreado del cursor
         for (int i = 0; i < 4; ++i) {
-            if (i == sel) 
+            if (i == pos) 
                 dpy.set_color(XLDisplay::BLACK);
-            else dpy.set_color(XLDisplay::SIENNA);
+            else dpy.set_color(XLDisplay::PERU);
 
             dpy.circle(45 * (i + 1), 35 * (turn + 1), 12);
             dpy.circleEdge(45 * (i + 1), 35 * (turn + 1), 12);
         }
-        // Seleccion del color de la chincheta
-        switch (comb[pos]) {
-            case 0: { dpy.set_color(XLDisplay::RED);     }   break;
-            case 1: { dpy.set_color(XLDisplay::BROWN);   }   break;
-            case 2: { dpy.set_color(XLDisplay::BLUE);    }   break;
-            case 3: { dpy.set_color(XLDisplay::YELLOW);  }   break;
-            case 4: { dpy.set_color(XLDisplay::GREEN);   }   break;
-            case 5: { dpy.set_color(XLDisplay::PURPLE);  }   break;
-            case 6: { dpy.set_color(XLDisplay::ORANGE);  }   break;
-            case 7: { dpy.set_color(XLDisplay::FUCHSIA); }   break;
-            case 8: { dpy.set_color(XLDisplay::WHITE);   }   break;
-            case 9: { dpy.set_color(XLDisplay::BLACK);   }   break;
-            default: break;
+
+        for (int i = 0; i < 4; ++i) { 
+            colorSelector(dpy, comb[i]);
+            dpy.circle(45 * (i + 1), 35 * (turn + 1), 10);
+            dpy.set_color(XLDisplay::BLACK);
+            dpy.circleEdge(45 * (i + 1), 35 * (turn + 1), 10);
         }
-        dpy.circle(45 * (pos + 1), 35 * (turn + 1), 10);
-        dpy.set_color(XLDisplay::BLACK);
-        dpy.circleEdge(45 * (pos + 1), 35 * (turn + 1), 10);
     }
     dpy.flush();
     return comb;
 }
 
+void GameClient::colorSelector(XLDisplay& dpy, int col) {
+    switch (col) {
+        case 0: { dpy.set_color(XLDisplay::RED);     }   break;
+        case 1: { dpy.set_color(XLDisplay::BROWN);   }   break;
+        case 2: { dpy.set_color(XLDisplay::BLUE);    }   break;
+        case 3: { dpy.set_color(XLDisplay::YELLOW);  }   break;
+        case 4: { dpy.set_color(XLDisplay::GREEN);   }   break;
+        case 5: { dpy.set_color(XLDisplay::PURPLE);  }   break;
+        case 6: { dpy.set_color(XLDisplay::ORANGE);  }   break;
+        case 7: { dpy.set_color(XLDisplay::FUCHSIA); }   break;
+        case 8: { dpy.set_color(XLDisplay::WHITE);   }   break;
+        case 9: { dpy.set_color(XLDisplay::BLACK);   }   break;
+        case 10: { dpy.set_color(XLDisplay::PERU);   }   break;
+        case 11: { dpy.set_color(XLDisplay::SIENNA); }   break;
+        default: break;
+    }
+}
 void GameClient::drawBoard(XLDisplay& dpy, std::vector<std::vector<int>> part) {
     // Dibujar el fondo del tablero
     dpy.set_color(XLDisplay::PERU);
@@ -298,21 +317,7 @@ void GameClient::drawBoard(XLDisplay& dpy, std::vector<std::vector<int>> part) {
     for (int i = 0; i < part.size(); i++) {
 		for (int j = 0; j < part.at(i).size(); j++) {
             // Selector de color
-			switch (part.at(i).at(j)) {
-            case 0: { dpy.set_color(XLDisplay::RED);     }   break;
-            case 1: { dpy.set_color(XLDisplay::BROWN);   }   break;
-            case 2: { dpy.set_color(XLDisplay::BLUE);    }   break;
-            case 3: { dpy.set_color(XLDisplay::YELLOW);  }   break;
-            case 4: { dpy.set_color(XLDisplay::GREEN);   }   break;
-            case 5: { dpy.set_color(XLDisplay::PURPLE);  }   break;
-            case 6: { dpy.set_color(XLDisplay::ORANGE);  }   break;
-            case 7: { dpy.set_color(XLDisplay::FUCHSIA); }   break;
-            case 8: { dpy.set_color(XLDisplay::WHITE);   }   break;
-            case 9: { dpy.set_color(XLDisplay::BLACK);   }   break;
-            case 10: { dpy.set_color(XLDisplay::PERU);   }   break;
-            case 11: { dpy.set_color(XLDisplay::SIENNA); }   break;
-            default: break;
-            }
+            colorSelector(dpy, part.at(i).at(j));
             // Si son las chinchetas guess
             if(j < 4){
                 // Posicion donde se dibuja. Tamano = 10

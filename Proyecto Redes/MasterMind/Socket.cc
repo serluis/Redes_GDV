@@ -71,7 +71,7 @@ Socket* Socket::accept() {
 int Socket::connect() {
     int connect = ::connect(sd, &sa, sa_len);
     if (connect == -1) {
-        std::cerr << "coonect: " << std::endl;
+        std::cerr << "conect: " << std::endl;
         return -1;
     }
     return connect;

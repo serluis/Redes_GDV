@@ -4,14 +4,20 @@ int main(int argc, char** argv) {
     // Crea el cliente
     MMClient client(argv[1], argv[2]);
     // Lo conecta al servidor
-    client.getSocket().connect();
+    int connection = client.getSocket().connect();
 
-    // Crear el juego para el cliente
-    GameClient MasterMind(client.getSocket(), 400, 450);
+    if (connection != -1) {
+        std::cout << "== Cliente conectado ==" << std::endl;
+        // Crear el juego para el cliente
+        GameClient MasterMind(client.getSocket(), 400, 450);
 
-    while(!MasterMind.getEnd()) {
-        MasterMind.update();
+        while(!MasterMind.getEnd()) {
+            MasterMind.update();
+        }
+
+        std::cout << "== Fin del juego ==" << std::endl;
     }
+    else std::cout << "== Error de conexion ==" << std::endl;
     
     return 0;
 }
