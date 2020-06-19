@@ -3,7 +3,7 @@
 int main(int argc, char** argv) {
     // Crear el servidor
     MMServer server(argv[1], argv[2]);
-    std::cout << "== Servidor alojado en: " << server.getSocket() << " ==" << std::endl;
+    std::cout << "== Servidor alojado en: " << server.getSocket() << " ==\n" << std::endl;
     
     // ---------------------------------------------------------------------- //
     // --- POOL DE THREADS -------------------------------------------------- //
@@ -16,10 +16,11 @@ int main(int argc, char** argv) {
     // --- GESTION DE LAS CONEXIONES AL SERVIDOR ---------------------------- //
     // ---------------------------------------------------------------------- //
     
-    const int PARTIDAS = 2;
-    int partida = 0;
-    /*while (partida < PARTIDAS) {
-        partida++;*/
+    const int MAXPARTIDAS = 2;
+    int partidas = 0;
+    while (partidas < MAXPARTIDAS) {
+        ++partidas;
+
         // Aceptar cliente 1
         Socket* sock_client_one = server.getSocket().accept();
         std::cout << "== Cliente 1 conectado desde: " << *sock_client_one << " ==" << std::endl;
@@ -31,6 +32,7 @@ int main(int argc, char** argv) {
         if (sock_client_one != nullptr && sock_client_two != nullptr) {
             // Hilo con el bucle principal del juego
             pool.push_back(std::thread([&]() {
+                std::cout << "== Creado thread con: " << *sock_client_one << " y " << *sock_client_two << " ==" << std::endl;
                 // Creamos el servidor que maneja la logica
                 GameServer MasterMind(server.getSocket(), sock_client_one, sock_client_two);
                 // Ejecutamos comprobamos si el juego continua
@@ -41,13 +43,19 @@ int main(int argc, char** argv) {
         }
         else std::cout << "== Los clientes no se han conectado correctamente ==" << std::endl;
 
-        // Juntar los threads (el programa no termina hasta que no han terminado todos)
-        for (auto &t : pool)
-            t.join();
-            
-        // Mensaje de desconexion
+        // Debug de hilos ejecutandose
+        std::cout << "== Estan corriendo " << pool.size() << " partidas ==\n" << std::endl;
+    }
+    
+    // Juntar los threads (el programa no termina hasta que no han terminado todos)
+    for (auto &t : pool) {
+        t.join();
+        // Debug join
         std::cout << "== Conexion terminada ==" << std::endl;
-    //}
+    }
+
+    // Mensaje de desconexion
+    std::cout << "== Servidor cerrado ==" << std::endl;
 
     return 0;
 }

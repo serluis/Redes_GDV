@@ -10,6 +10,9 @@
 
 class GameServer {
 private:
+    // Control de turnos
+    const int MAXTURNS = 12;
+    int turn;
     // Servidor
     Socket server;
     // Jugadores
@@ -23,14 +26,14 @@ private:
 public:
     // Constructora y destructora
     GameServer(Socket sock, Socket* player_ONE, Socket* player_TWO) 
-     : server(sock), P1(player_ONE), P2(player_TWO), end(false), player1(true) {
+     : server(sock), P1(player_ONE), P2(player_TWO), end(false), player1(true), turn(0) {
         init();
     };
     ~GameServer() {};
 
     // Metodos especificos del juego 
     void init();
-    std::vector<int> solution(std::vector<int>pass, std::vector<int>guess);
+    std::vector<int> solution(std::vector<int>pass, std::vector<int>guess, int turn);
 
     // Metodos tradicionales del juego
     void update();
@@ -78,7 +81,7 @@ public:
     void drawBoard(XLDisplay& dpy, std::vector<std::vector<int>> part);
     void colorSelector(XLDisplay& dpy, int col);
     void wait(XLDisplay& dpy);
-    
+
     // Metodos tradicionales del juego
     void update();
 

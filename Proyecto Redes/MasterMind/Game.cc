@@ -22,21 +22,26 @@ void GameServer::init() {
 }
 
 void GameServer::update() {
+    ++turn;
     // Recibir la propuesta del jugador correspondiente
     Socket* sock;
     Message *msgRecv = new Message();
+    
     if (player1)
         P1->recv(*msgRecv, sock);
     else P2->recv(*msgRecv, sock);
-
     // Debug pass y guess
-    std::cout << "\n> Password: { " << pass.at(0) << ", " << pass.at(1) << ", " << pass.at(2) << ", " << pass.at(3) << " };" << std::endl;
+    std::cout << "\n> Passw: { " << pass.at(0) << ", " << pass.at(1) << ", " << pass.at(2) << ", " << pass.at(3) << " };" << std::endl;
     std::cout << "> Guess: { " << msgRecv->getGuess().at(0) << ", " << msgRecv->getGuess().at(1) << ", " << msgRecv->getGuess().at(2) << ", " << msgRecv->getGuess().at(3) << " };\n" << std::endl;
 
     // Comprobar si la solucion es correcta: LINEA DE TURNO
-    std::vector<int>lt = solution(pass, msgRecv->getGuess());
+    std::vector<int>lt = solution(pass, msgRecv->getGuess(), turn);
     
+    // Actualizar si hay fin de partida
+    if (lt.at(0) == 2 || lt.at(0) == 1)
+        end = true;
 
+    // Debug de la linea que se va a mandar
     std::cout << "> linea: { ";
     for(int i = 0; i < 9; ++i)
         std::cout << lt.at(i) << " ";
@@ -51,7 +56,7 @@ void GameServer::update() {
     player1 = !player1;
 }
 
-std::vector<int> GameServer::solution(std::vector<int> pass, std::vector<int> guess) {
+std::vector<int> GameServer::solution(std::vector<int> pass, std::vector<int> guess, int turn) {
     // Solucion auxiliar
     std::vector<int> sol = { 0, 11, 11, 11, 11, 11, 11, 11, 11 };
     
@@ -90,6 +95,10 @@ std::vector<int> GameServer::solution(std::vector<int> pass, std::vector<int> gu
     // Fin de partida correcta
     if(pass.at(0) == guess.at(0) && pass.at(1) == guess.at(1) && pass.at(2) == guess.at(2) && pass.at(3) == guess.at(3)) {
         sol.at(0) = 1;
+    }
+    // Fin de partida incorrecta
+    if (turn >= 12 && sol.at(0) == 0) {
+        sol.at(0) = 2;
     }
 
     return sol;
@@ -158,7 +167,7 @@ void GameClient::update() {
             dpy.clear();
             drawBoard(dpy, game);
 
-            if (end) {
+            if (end && msgRecv->getEndGame() == 1) {
                 // Mensaje por consola
                 std::cout << "> HAS GANADO! " << std::endl;
                 // Mensaje por ventana del juego
@@ -195,7 +204,7 @@ void GameClient::update() {
             dpy.clear();
             drawBoard(dpy, game);
 
-            if (end) {
+            if (end && msgRecv->getEndGame() == 1) {
                 // Mensaje por consola
                 std::cout << "> TU PIERDES! " << std::endl;
                 // Mensaje por ventana del juego
@@ -209,7 +218,7 @@ void GameClient::update() {
     }
     
     ++turn;
-    if (turn == 13) {
+    if (turn == 12) {
         // Fin del juego
         end = true;
         // Mensaje por consola
