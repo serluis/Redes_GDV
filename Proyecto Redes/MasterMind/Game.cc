@@ -149,7 +149,7 @@ void GameClient::update() {
             }
 
             // Debug de la ronda
-            std::cout << "> ronda: ";
+            std::cout << "> Ronda tuya: ";
             for(int h = 0; h < 8; h++)
                 std::cout << game.at(turn).at(h) << " ";
             std::cout << std::endl;
@@ -163,8 +163,10 @@ void GameClient::update() {
                 std::cout << "> HAS GANADO! " << std::endl;
                 // Mensaje por ventana del juego
                 dpy.set_color(XLDisplay::BLUE);
-                dpy.text(150, 150, "TU GANAS!");
+                dpy.text(125, 150, "TU GANAS!");
+                dpy.text(125, 175, "PRESIONA Q PARA SALIR");
                 dpy.flush();
+                wait(dpy);
             }
         }
         else {
@@ -184,7 +186,7 @@ void GameClient::update() {
             }
 
             // Debug de la ronda
-            std::cout << "> ronda del otro jugador: ";
+            std::cout << "> Ronda otro: ";
             for(int h = 0; h < 8; h++)
                 std::cout << game.at(turn).at(h) << " ";
             std::cout << std::endl;
@@ -198,8 +200,10 @@ void GameClient::update() {
                 std::cout << "> TU PIERDES! " << std::endl;
                 // Mensaje por ventana del juego
                 dpy.set_color(XLDisplay::BLUE);
-                dpy.text(150, 150, "TU PIERDES!");
+                dpy.text(125, 150, "TU PIERDES!");
+                dpy.text(125, 175, "PRESIONA Q PARA SALIR");
                 dpy.flush();
+                wait(dpy);
             }
         }
     }
@@ -212,10 +216,24 @@ void GameClient::update() {
         std::cout << "> TABLAS! NADIE HA GANADO " << std::endl;
         // Mensaje por ventana del juego
         dpy.set_color(XLDisplay::BLUE);
-        dpy.text(150, 150, "TABLAS! NADIE HA GANADO");
+        dpy.text(125, 150, "TABLAS! NADIE HA GANADO");
+        dpy.text(125, 175, "PRESIONA Q PARA SALIR");
         dpy.flush();
+        wait(dpy);
     }
     playFirst = !playFirst;
+}
+
+void GameClient::wait(XLDisplay& dpy) {
+    char k;
+    do {
+        k = dpy.wait_key();
+    } while (k != 'q');
+
+    dpy.clear();
+    dpy.flush();
+
+    sleep(1);
 }
 
 std::vector<int> GameClient::setGuess(XLDisplay& dpy, int turn) {

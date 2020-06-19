@@ -77,6 +77,8 @@ public:
     void init();
     void drawBoard(XLDisplay& dpy, std::vector<std::vector<int>> part);
     void colorSelector(XLDisplay& dpy, int col);
+    void wait(XLDisplay& dpy);
+    
     // Metodos tradicionales del juego
     void update();
 
